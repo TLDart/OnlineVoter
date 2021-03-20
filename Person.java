@@ -1,8 +1,6 @@
 import java.io.Serializable;
 import java.sql.Date;
 
-import jdk.jfr.Unsigned;
-
 import java.util.Calendar;
 
 public class Person implements Serializable{
@@ -16,6 +14,7 @@ public class Person implements Serializable{
    private Calendar ccValidity;
 
    Person(long uid, String name, String password, String dep, String address, int phoneNumber, int ccNr, Calendar ccValidity){
+       super();
        this.uid = uid;
        this.name = name;
        this.password = password;
