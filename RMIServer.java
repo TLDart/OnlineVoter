@@ -1,6 +1,7 @@
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.ArrayList;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.*;
@@ -15,11 +16,19 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     String db = "data/db.csv";
     String db2 = "data/db2.csv";
 
-    private Election searchElectionById(long uid){
-        for(Election e: eList){
-            if(e.getUid() == uid){
-                return e;
+    private Person getUserByUid(long uid){
+        for (Person p : this.pList){
+            if (p.getUid() == uid){
+                return p;
             }
+        }
+        return null;
+    }
+
+    //verify if a voting list with a certain name already exists, if so it is returned
+    private VotingList searchVotingList(Election election, String vlName){
+        for (VotingList vl : election.getLists()){
+            if (vlName.equals(vl.getName())) return vl;
         }
         return null;
     }
@@ -52,6 +61,15 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
     }
 
+    public Election searchElectionById(long uid){
+        for(Election e: eList){
+            if(e.getUid() == uid){
+                return e;
+            }
+        }
+        return null;
+    }
+
     public boolean registerUser(Person p) throws RemoteException{
         p.setUid(++lastPersonUid);
         pList.add(p);
@@ -62,6 +80,93 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public boolean createElection(Election e) throws RemoteException{
         e.setUid(++lastElectionUid);
         return eList.add(e);
+    }
+
+    // public boolean createVotingList(long electionId, String name, int type, CopyOnWriteArrayList<Long> members_uid){
+    //     CopyOnWriteArrayList<Person> members = new CopyOnWriteArrayList<Person>();
+    //     Person p;
+    //     Election election;
+    //     //encontrar as pessoas da lista
+    //     for (long uid : members_uid){
+    //         p = this.getUserByUid(uid);
+    //         if (p != null) members.add(p);
+    //     }
+    //     //encontar a eleicao
+    //     election = this.searchElectionById(electionId);
+    //     election.getLists().add(new VotingList(name, type, members));
+
+    //     return true;
+    // }
+    public String createVotingList(long electionId, String name, int type, CopyOnWriteArrayList<Long> members_uid){
+        String response = "";//if empty it was sucessful, otherwise it says what was wrong with the request
+        CopyOnWriteArrayList<Person> members = new CopyOnWriteArrayList<Person>();
+        Person p;
+
+        //get the election
+        Election election = this.searchElectionById(electionId);
+        if (election == null) response = response + "Election Id doesnt exist.\n";
+        else{
+            //verify if there's already a list with the same name for this election
+            if(this.searchVotingList(election, name) != null) response = response + "A list with the given name already exists.\n";
+        }
+
+        //add members and check if the id is valid
+        for (long uid : members_uid){
+            p = this.getUserByUid(uid);
+            if(p == null) response = response + String.format("Uid %f doesnt exist.\n", uid);
+            else if(p.getType() != type) response = response + String.format("Uid %f doesnt have the same type as the list.");
+            else members.add(p);
+        }
+
+        //check type
+        if (election.getType() != type) response = response + String.format("Type is different from the election's type.");
+
+        //no errors, add voting list to election
+        if(response.equals("")){
+            election.getLists().add(new VotingList(name, type, members));
+            saveObjectFile(db2, eList);
+        }
+
+
+        return response;
+    }
+
+    public String createElection(Calendar startTime, Calendar endTime, String description, String title, String department, int type){
+        String response = "";
+        Election e;
+        //verify if there is other election with the same name at the same time in the same departement for the same public
+        for (Election election : this.eList){
+            if (election.getTitle().equals(title) && election.getDepartment().equals(department) && election.getType() == type){
+                if (election.getStartTime().before(endTime) || startTime.before(election.getEndTime())) response = response + "There is another election with the same name in the same department with overlapping time intervals.";
+            }
+        }
+
+        //create the election
+        e = new Election(startTime, endTime, description, title, department, new CopyOnWriteArrayList<VotingList>(), type);
+        e.setUid(++lastElectionUid);
+        if (response.equals("")){
+            this.eList.add(e);
+            saveObjectFile(db2, eList);
+        }
+
+        return response;
+    }
+
+    //get a list with the people of a certain department of a certain type
+    public ArrayList<Person> getListUsers(String department, int type){
+        ArrayList<Person> result = new ArrayList<Person>();
+        for (Person p : this.pList){
+            if (p.getDep().equals(department) && p.getType() == type) result.add(p);
+        }
+        return result;
+    }
+
+    public ArrayList<Election> getListElections(String department, int type){
+        ArrayList<Election> result = new ArrayList<Election>();
+        for (Election e : this.eList){
+            if (e.getDepartment().equals(department) && e.getType() == type) result.add(e);
+        }
+        return result;
     }
 
     public void test(String msg) throws RemoteException{

@@ -2,14 +2,26 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.io.Serializable;
 
 public class VotingList implements Serializable {
-    CopyOnWriteArrayList<Person> listMembers;
-    String name;
-    long voteCount;
+    private CopyOnWriteArrayList<Person> listMembers;
+    private String name;
+    private long voteCount;
+    private int type;//0 -> student, 1 -> teacher, 2 -> staff
 
-    VotingList(String name, long voteCount, CopyOnWriteArrayList<Person> listMembers){
+
+    VotingList(String name, int type, CopyOnWriteArrayList<Person> listMembers){
         super();
         this.name = name;
-        this.voteCount = voteCount;
+        this.voteCount = 0;
+        this.type = type;
         this.listMembers = listMembers;
+    }
+
+
+    public String getName(){
+        return this.name;
+    }
+
+    public String toString(){
+        return String.format("List name: %s | Number of votes: %d", this.name, this.voteCount);
     }
 }

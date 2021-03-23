@@ -1,6 +1,8 @@
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.CopyOnWriteArrayList;
+
 public class Election implements Serializable {
     private long uid;
     private Calendar startTime;
@@ -9,20 +11,21 @@ public class Election implements Serializable {
     private String title;
     private long totalVoteCount;
     private CopyOnWriteArrayList<VotingList> lists;
-    private String departament;
+    private String department;
+    private int type;
 
    
 
-    Election(long uid, Calendar startTime, Calendar endTime, String description, String title, String departament, CopyOnWriteArrayList<VotingList> lists) {
+    Election(Calendar startTime, Calendar endTime, String description, String title, String department, CopyOnWriteArrayList<VotingList> lists, int type) {
         super();
-        this.uid = uid;
         this.startTime = startTime;
         this.endTime = endTime;
         this.description = description;
         this.title = title; 
         this.totalVoteCount = 0;
         this.lists = lists;
-        this.departament = departament;
+        this.department = department;
+        this.type = type;
     }
 
     public long getUid() {
@@ -81,12 +84,33 @@ public class Election implements Serializable {
         this.lists = lists;
     }
 
-    public String getDepartament() {
-        return this.departament;
+    public String getDepartment() {
+        return this.department;
     }
 
-    public void setDepartament(String departament) {
-        this.departament = departament;
+    public void setDepartment(String departament) {
+        this.department = departament;
+    }
+
+    public int getType(){
+        return this.type;
+    }
+
+    public void setType(int type){
+        this.type = type;
+    }
+
+    public String toString(){
+        String type_str = "";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        if (this.type == 0) type_str = "Student";
+        else if (this.type == 1) type_str = "Teacher";
+        else if (this.type == 2) type_str = "Staff";
+        String res = String.format("Uid: %d | Title: %s | Description: %s | Start time : %s | End time: %s | Department: %s | Type : %s | Total votes: %d", this.uid, this.title, this.description, sdf.format(this.startTime.getTime()), sdf.format(this.endTime.getTime()), this.department, type_str, this.totalVoteCount);
+        for (VotingList vl : this.lists){
+            res = res + "\n" + vl.toString();
+        }
+        return res;
     }
 
 }

@@ -1,6 +1,6 @@
 import java.io.Serializable;
 import java.sql.Date;
-
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class Person implements Serializable{
@@ -12,10 +12,9 @@ public class Person implements Serializable{
     private int phoneNumber;
     private int ccNr;
     private Calendar ccValidity;
+    private int type;
 
-  
-
-    Person(String name, String password, String dep, String address, int phoneNumber, int ccNr, Calendar ccValidity){
+    Person(String name, String password, String dep, String address, int phoneNumber, int ccNr, int type, Calendar ccValidity){
        super();
        this.name = name;
        this.password = password;
@@ -24,6 +23,7 @@ public class Person implements Serializable{
        this.phoneNumber = phoneNumber;
        this.ccNr = ccNr;
        this.ccValidity = ccValidity;
+       this.type = type;
    }
    Person(String s){
         super();
@@ -85,11 +85,28 @@ public class Person implements Serializable{
         this.ccNr = ccNr;
     }
 
+    public int getType(){
+        return this.type;
+    }
+
+    public void setType(int type){
+        this.type = type;
+    }
+
     public Calendar getCcValidity() {
         return this.ccValidity;
     }
 
     public void setCcValidity(Calendar ccValidity) {
         this.ccValidity = ccValidity;
+    }
+
+    public String toString(){
+        String type_str = "";
+        SimpleDateFormat sdf = new SimpleDateFormat("yyy/MM/dd");
+        if (this.type == 0) type_str = "Student";
+        else if (this.type == 1) type_str = "Teacher";
+        else if (this.type == 2) type_str = "Staff";
+        return String.format("Uid: %d | Name: %s | Department: %s | Address: %s | Phone number: %d | Type: %s | ccNr: %d | ccValidity: %s", this.uid, this.name, this.dep, this.address, this.phoneNumber, type_str, this.ccNr, sdf.format(this.ccValidity.getTime()));
     }
 }
