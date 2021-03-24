@@ -1,21 +1,26 @@
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.*;
 import java.io.*;
+import java.rmi.*;
+import java.util.concurrent.*;
+
 
 public class RMIServer extends UnicastRemoteObject implements RMIServerInterface{
     private CopyOnWriteArrayList<Person> pList;
     private CopyOnWriteArrayList<Election> eList;
     private int port; 
+    private int backUp; 
     private long lastElectionUid;
     private long lastPersonUid;
     String db = "data/db.csv";
     String db2 = "data/db2.csv";
-
+    private boolean isPrimary = false;
     private Person getUserByUid(long uid){
         for (Person p : this.pList){
             if (p.getUid() == uid){
@@ -104,7 +109,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
         //get the election
         Election election = this.searchElectionById(electionId);
-        if (election == null) response = response + "Election Id doesnt exist.\n";
+        if (election == null) response = response + "Election Id doesnt exist.\n"; //TODO check here if something should be returned
         else{
             //verify if there's already a list with the same name for this election
             if(this.searchVotingList(election, name) != null) response = response + "A list with the given name already exists.\n";
@@ -113,13 +118,13 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         //add members and check if the id is valid
         for (long uid : members_uid){
             p = this.getUserByUid(uid);
-            if(p == null) response = response + String.format("Uid %f doesnt exist.\n", uid);
-            else if(p.getType() != type) response = response + String.format("Uid %f doesnt have the same type as the list.");
+            if(p == null) response = response + String.format("Uid %lu doesnt exist.%n", uid);
+            else if(p.getType() != type) response = response + String.format("Uid %lu doesnt have the same type as the list.", uid);
             else members.add(p);
         }
 
         //check type
-        if (election.getType() != type) response = response + String.format("Type is different from the election's type.");
+        if (election != null && election.getType() != type) response = response + "Type is different from the election's type.";
 
         //no errors, add voting list to election
         if(response.equals("")){
@@ -197,9 +202,10 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         System.out.println(msg);
     }
 
-    RMIServer(int port) throws RemoteException{
+    RMIServer(int port, int backup) throws RemoteException{
         super();
         this.port = port;
+        this.backUp = backup;
         Object t1 = this.loadObjectFile(db);
         Object t2 = this.loadObjectFile(db2);
         if(t1 != null){
@@ -223,9 +229,59 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     public int getPort(){
         return this.port;
     }
+
+    public void setIsPrimary(boolean isPrimary){
+        this.isPrimary = isPrimary;
+    }
+
+    public String heartbeat() throws RemoteException{
+        return "ACK";
+    }
     public static void main(String[] args) throws RemoteException {
-        RMIServerInterface sv = new RMIServer(3099);
+        int port = Integer.parseInt(args[0]);
+        int backup = Integer.parseInt(args[1]);
+        int counter = 0;
+        RMIServerInterface sv = new RMIServer(port, backup);
 		LocateRegistry.createRegistry(sv.getPort()).rebind("SV", sv);
 		System.out.println("Server ready...");
+        RMIServerInterface svBack = null;
+        while(counter < 5){
+            try{
+                svBack = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s","localhost",backup,"SV"));
+                System.out.println(String.format("//%s:%d/%s","localhost",backup,"SV"));
+                counter = 10;
+            }
+            catch(Exception e){
+                counter++;
+                System.out.println(e.getMessage());
+            }
+            try{
+                TimeUnit.SECONDS.sleep(1); //TODO check this try catch
+            }
+            catch(InterruptedException e){
+                return;
+            }
+        }
+        counter = (counter == 10) ? 0: 5;
+        while(counter < 5){
+            try{
+                if(svBack != null)
+                    svBack.heartbeat();
+                counter = 0;
+                System.out.println("HeartBeat Successful");
+            }
+            catch(RemoteException e){// This means that the other server is down, and therefore we check if we assume primary
+                System.out.println("Remote server failed");
+                counter++;
+            }
+            try{
+                TimeUnit.SECONDS.sleep(1); //TODO check this try catch
+            }
+            catch(InterruptedException e){
+                return;
+            }
+        }
+        sv.setIsPrimary(true);
+        System.out.println("Changed to primary");
 	}
 }
