@@ -10,6 +10,7 @@ public interface RMIServerInterface extends Remote {
     //public boolean createVotingList(long electionId, String name, int type, CopyOnWriteArrayList<Long> members_uid);
     public String createVotingList(long electionId, String name, int type, CopyOnWriteArrayList<Long> members_uid) throws RemoteException;
     public String createElection(Calendar startTime, Calendar endTime, String description, String title, String department, int type) throws RemoteException;
+    public String updateElection(long uid, Calendar startTime, Calendar endTime, String description, String title, String department) throws RemoteException;
     public void test(String msg) throws RemoteException;
     public ArrayList<Person> getListUsers(String department, int type) throws RemoteException;
     public ArrayList<Election> getListElections(String department, int type) throws RemoteException;

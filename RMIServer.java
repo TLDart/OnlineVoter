@@ -137,7 +137,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         //verify if there is other election with the same name at the same time in the same departement for the same public
         for (Election election : this.eList){
             if (election.getTitle().equals(title) && election.getDepartment().equals(department) && election.getType() == type){
-                if (election.getStartTime().before(endTime) || startTime.before(election.getEndTime())) response = response + "There is another election with the same name in the same department with overlapping time intervals.";
+                if (election.getStartTime().before(endTime) || startTime.before(election.getEndTime())) return  "There is another election with the same name in the same department with overlapping time intervals.";
             }
         }
 
@@ -149,6 +149,30 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             saveObjectFile(db2, eList);
         }
 
+        return response;
+    }
+
+    public String updateElection(long uid, Calendar startTime, Calendar endTime, String description, String title, String department){
+        String response = "";
+        Election election = this.searchElectionById(uid);
+        if(election == null) return "Uid doens't exist.";
+
+        if (startTime != null && endTime != null){
+            election.setStartTime(startTime);
+            election.setEndTime(endTime);
+        }
+        else if(startTime != null && endTime == null){
+            if(election.getEndTime().before(startTime)) return "Starting time after the existing ending time.";
+            else election.setStartTime(startTime);
+        }
+        else if(endTime != null){
+            if(endTime.before(election.getStartTime())) return "Ending time before the existing starting time.";
+            else election.setEndTime(endTime);
+        }
+        if(description != null) election.setDescription(description);
+        if(department != null) election.setDepartment(department);
+        if(title != null) election.setTitle(title);
+        
         return response;
     }
 

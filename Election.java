@@ -13,6 +13,7 @@ public class Election implements Serializable {
     private CopyOnWriteArrayList<VotingList> lists;
     private String department;
     private int type;
+    private CopyOnWriteArrayList<VotingTable> tables;
 
    
 
@@ -26,6 +27,7 @@ public class Election implements Serializable {
         this.lists = lists;
         this.department = department;
         this.type = type;
+        this.tables = new CopyOnWriteArrayList<VotingTable>();
     }
 
     public long getUid() {
@@ -100,13 +102,21 @@ public class Election implements Serializable {
         this.type = type;
     }
 
+    public CopyOnWriteArrayList<VotingTable> getVotingTables(){
+        return this.tables;
+    }
+
+    public void setVotingTables(CopyOnWriteArrayList<VotingTable> tables ){
+        this.tables = tables;
+    }
+
     public String toString(){
         String type_str = "";
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");
         if (this.type == 0) type_str = "Student";
         else if (this.type == 1) type_str = "Teacher";
         else if (this.type == 2) type_str = "Staff";
-        String res = String.format("Uid: %d | Title: %s | Description: %s | Start time : %s | End time: %s | Department: %s | Type : %s | Total votes: %d", this.uid, this.title, this.description, sdf.format(this.startTime.getTime()), sdf.format(this.endTime.getTime()), this.department, type_str, this.totalVoteCount);
+        String res = String.format("Uid: %d | Title: %s | Start time : %s | End time: %s | Department: %s | Type : %s | Total votes: %d\n---------------------------------------------\nDescription: %s\n---------------------------------------------\nLists:\n", this.uid, this.title, sdf.format(this.startTime.getTime()), sdf.format(this.endTime.getTime()), this.department, type_str, this.totalVoteCount, this.description);
         for (VotingList vl : this.lists){
             res = res + "\n" + vl.toString();
         }

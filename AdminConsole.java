@@ -113,49 +113,108 @@ public class AdminConsole {
         }
     }
 
-    public boolean regElection(){
+    public boolean regElection(int option){//if option = 0 -> create election, option = 1 -> update election
         Calendar startTime = Calendar.getInstance(), endTime = Calendar.getInstance();
-        String title, description, department, response;
-        int type;
+        String title, description, department, response, aux;
+        int type = -1;
         String [] date_fields;
+        long uid = -1;
 
         try{
+            //pedir o uid da eleicao
+            if (option == 1){
+                System.out.println("Insert election's uid:");
+                aux = this.reader.readLine();
+                if(aux.equals("")){
+                    System.out.println("A uid has to be given.");
+                    return false;
+                }
+                else uid = Long.parseLong(aux);                
+            }
             //obter o nome
             System.out.println("Insert the election's title:");
             title = this.reader.readLine();
+            if(title.equals("") && option == 1) title = null;
+            else if(title.equals("")){
+                System.out.println("A title has to be given.");
+                return false;
+            }
             //obter a descricao
             System.out.println("Insert the election's description:");
             description = this.reader.readLine();
+            if(description.equals("") && option == 1) description = null;
+            else if(description.equals("")){
+                System.out.println("A description has to be given.");
+                return false;
+            }
             //obter o departamento
             System.out.println("Insert the election's department:");
             department = this.reader.readLine();
-            //obter o tipo de eleicao
-            System.out.println("Insert the election's type (0 - student, 1 - teacher, 2 - staff):");
-            type = Integer.parseInt(this.reader.readLine());
-            if (type != 0 && type != 1 && type != 2){
-                System.out.println("Wrong type value inserted.");
+            if(department.equals("") && option == 1) department = null;
+            else if(department.equals("")){
+                System.out.println("A department has to be given.");
                 return false;
+            }
+            //obter o tipo de eleicao
+            if(option == 0){
+                System.out.println("Insert the election's type (0 - student, 1 - teacher, 2 - staff):");
+                aux = this.reader.readLine();
+                if(aux.equals("")){
+                    System.out.println("A type has to be given.");
+                    return false;
+                }
+                type = Integer.parseInt(aux);
+                if (type != 0 && type != 1 && type != 2){
+                    System.out.println("Wrong type value inserted.");
+                    return false;
+                }
             }
             //obter data de inicio
-            System.out.println("Insert the election's starting date (yyyy/mm/dd):");
-            date_fields = this.reader.readLine().split("/");
-            startTime.set(Integer.parseInt(date_fields[0]), Integer.parseInt(date_fields[1]), Integer.parseInt(date_fields[2]));
-            //verify if the starting date is valid
-            if (startTime.before(Calendar.getInstance())){
-                System.out.println("The starting date is invalid.");
+            System.out.println("Insert the election's starting date (yyyy/MM/dd/hh/mm):");
+            aux = this.reader.readLine();
+            if (aux.equals("") && option == 1) startTime = null;
+            else if(aux.equals("")){
+                System.out.println("A starting date has to be given.");
                 return false;
+            }
+            else{
+                date_fields = aux.split("/");
+                startTime.set(Integer.parseInt(date_fields[0]), Integer.parseInt(date_fields[1]), Integer.parseInt(date_fields[2]), Integer.parseInt(date_fields[3]), Integer.parseInt(date_fields[4]));
+                //verify if the starting date is valid
+                if (startTime.before(Calendar.getInstance())){
+                    System.out.println("The starting date is invalid.");
+                    return false;
+                }
             }
             //obter a data de fim da votacao
-            System.out.println("Insert the election's ending date (yyyy/mm/dd):");
-            date_fields = this.reader.readLine().split("/");
-            endTime.set(Integer.parseInt(date_fields[0]), Integer.parseInt(date_fields[1]), Integer.parseInt(date_fields[2]));
-            //verify if the starting date is valid
-            if (endTime.before(Calendar.getInstance())){
-                System.out.println("The ending date is invalid.");
+            System.out.println("Insert the election's ending date (yyyy/MM/dd/hh/mm):");
+            aux = this.reader.readLine();
+            if (aux.equals("") && option == 1) endTime = null;
+            else if(aux.equals("")){
+                System.out.println("A ending date has to be given.");
                 return false;
             }
+            else{
+                date_fields = aux.split("/");
+                endTime.set(Integer.parseInt(date_fields[0]), Integer.parseInt(date_fields[1]), Integer.parseInt(date_fields[2]), Integer.parseInt(date_fields[3]), Integer.parseInt(date_fields[4]));
+                //verify if the starting date is valid
+                if (endTime.before(Calendar.getInstance())){
+                    System.out.println("The ending date is invalid.");
+                    return false;
+                }
+            }
 
-            response = this.rmiSv.createElection(startTime, endTime, description, title, department, type);
+            //verify if the endTime is after the startTime
+            if(startTime != null && endTime != null){
+                if(endTime.before(startTime)){
+                    System.out.println("The ending date is before the starting date.");
+                    return false;
+                }
+            }
+
+            if (option == 0) response = this.rmiSv.createElection(startTime, endTime, description, title, department, type);
+            else if (option == 1) response = this.rmiSv.updateElection(uid, startTime, endTime, description, title, department);
+            else response = "Wrong option.";
             if (response.equals("")) return true;
             else{
                 System.out.println(response);
@@ -209,9 +268,12 @@ public class AdminConsole {
                 return;
             }
             elections = this.rmiSv.getListElections(department, type);
-
+            System.out.println("---------------------------------------------");
             //print elections info
-            for (Election e : elections) System.out.println(e);
+            for (Election e : elections){
+              System.out.println(e);
+              System.out.println("####################");
+            }
         }
         catch(IOException e){
             System.out.println("IOException: " + e.getMessage());
@@ -223,13 +285,15 @@ public class AdminConsole {
         int option;
         try{
             while(!stop){
-                System.out.println("Choose an option:\n1 - Register user\n2 - Create election\n3 - Create a voting list\n4 - Show users from a department and a certain type\n5 - Show elections from a department and a certain type\n0 - exit");
+                System.out.println("---------------------------------------------");
+                System.out.println("Choose an option:\n1 - Register user\n2 - Create election\n3 - Create a voting list\n4 - Show users from a department and a certain type\n5 - Show elections from a department and a certain type\n6 - Update election\n0 - exit");
                 option = Integer.parseInt(this.reader.readLine());
                 if (option == 1) this.regPerson();
-                else if (option == 2) this.regElection();
+                else if (option == 2) this.regElection(0);
                 else if (option == 3) this.regVotingList();
                 else if (option == 4) this.showUsers();
                 else if (option == 5) this.showElections();
+                else if (option == 6) this.regElection(1);
                 else if (option == 0) stop = true;
             }
         }
