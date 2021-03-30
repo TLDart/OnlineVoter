@@ -12,9 +12,13 @@ import javax.swing.text.DefaultEditorKit.CopyAction;
 import jdk.jshell.spi.ExecutionControl.ExecutionControlException;
 
 public class AdminConsole {
-    RMIServerInterface rmiSv;
-    InputStreamReader input;
-    BufferedReader reader;
+    private RMIServerInterface rmiSv;
+    private InputStreamReader input;
+    private BufferedReader reader;
+    private String ip;
+    private String svName;
+    private int port;
+    private int backup;
 
     public  boolean regPerson(){
         //ler da consola
@@ -283,8 +287,8 @@ public class AdminConsole {
     private void menu(){
         boolean stop = false;
         int option;
-        try{
-            while(!stop){
+        while(!stop){
+            try{
                 System.out.println("---------------------------------------------");
                 System.out.println("Choose an option:\n1 - Register user\n2 - Create election\n3 - Create a voting list\n4 - Show users from a department and a certain type\n5 - Show elections from a department and a certain type\n6 - Update election\n0 - exit");
                 option = Integer.parseInt(this.reader.readLine());
@@ -296,13 +300,40 @@ public class AdminConsole {
                 else if (option == 6) this.regElection(1);
                 else if (option == 0) stop = true;
             }
-        }
-        catch(IOException e){
-            System.out.println("IOException: " + e.getMessage());
+            catch(IOException e){
+                System.out.println("IOException: " + e.getMessage());
+            }
         }
     }
 
-    AdminConsole(String ip, String svName, int port){
+    private void selectServer(){
+        int temp;
+        do{
+            try{
+                this.rmiSv.heartbeat();
+            }
+            catch(RemoteException e ){
+                temp = port; 
+                this.port = this.backup;
+                this.backup = temp;
+                try{
+                    this.rmiSv = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s",ip,port,svName));
+                    this.rmiSv.heartbeat();
+                }
+                catch(Exception f){
+                    System.out.println("there was an error.\n" + e.getMessage());
+                    this.rmiSv = null;
+                }
+            }
+        }while(this.rmiSv == null);
+    }
+
+    AdminConsole(String ip, String svName, int port, int backup){
+        this.ip =  ip;
+        this.svName = svName;
+        this.port = port;
+        this.backup = backup;
+
         this.input = new InputStreamReader(System.in);
         this.reader = new BufferedReader(input);
         try{
@@ -317,10 +348,11 @@ public class AdminConsole {
 
     }
     public static void main(String[] args) throws MalformedURLException, RemoteException, NotBoundException{
-        int port = 3099;
+        int port = Integer.parseInt(args[0]);
+        int backup = Integer.parseInt(args[1]);
         String svName = "SV";
         String ip = "localhost";
-        new AdminConsole(ip, svName, port);
+        new AdminConsole(ip, svName, port, backup);
     }
 
 }

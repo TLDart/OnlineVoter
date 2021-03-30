@@ -16,5 +16,6 @@ public interface RMIServerInterface extends Remote {
     public ArrayList<Election> getListElections(String department, int type) throws RemoteException;
     public void setIsPrimary(boolean isPrimary) throws RemoteException;
     public String heartbeat() throws RemoteException;
+    public Info getEligibleElection(int cc);
     //boolean verify User(long id, String dep) throws RemoteException;
 }

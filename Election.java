@@ -13,7 +13,7 @@ public class Election implements Serializable {
     private CopyOnWriteArrayList<VotingList> lists;
     private String department;
     private int type;
-    private CopyOnWriteArrayList<VotingTable> tables;
+    private CopyOnWriteArrayList<String> tables;
 
    
 
@@ -27,7 +27,7 @@ public class Election implements Serializable {
         this.lists = lists;
         this.department = department;
         this.type = type;
-        this.tables = new CopyOnWriteArrayList<VotingTable>();
+        this.tables = new CopyOnWriteArrayList<String>();
     }
 
     public long getUid() {
@@ -102,11 +102,11 @@ public class Election implements Serializable {
         this.type = type;
     }
 
-    public CopyOnWriteArrayList<VotingTable> getVotingTables(){
+    public CopyOnWriteArrayList<String> getVotingTables(){
         return this.tables;
     }
 
-    public void setVotingTables(CopyOnWriteArrayList<VotingTable> tables ){
+    public void setVotingTables(CopyOnWriteArrayList<String> tables ){
         this.tables = tables;
     }
 

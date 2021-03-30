@@ -161,6 +161,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         String response = "";
         Election election = this.searchElectionById(uid);
         if(election == null) return "Uid doens't exist.";
+        if(election.getStartTime().before(Calendar.getInstance())) return "You cannot update this Election";
 
         if (startTime != null && endTime != null){
             election.setStartTime(startTime);
@@ -202,10 +203,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         System.out.println(msg);
     }
 
-    RMIServer(int port, int backup) throws RemoteException{
-        super();
-        this.port = port;
-        this.backUp = backup;
+    private void loader(){
         Object t1 = this.loadObjectFile(db);
         Object t2 = this.loadObjectFile(db2);
         if(t1 != null){
@@ -226,12 +224,56 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         System.out.println(this.lastPersonUid);
     }
 
+    public Person getPersonByCC(int cc){
+        for(Person p : pList){
+            if(p.getCcNr() == cc){
+                return p;
+            }
+        }
+        return null;
+    }
+
+    public Info getEligibleElection(int cc, String curDepName){
+        ArrayList<Election> result = new ArrayList<>();
+        Person p = getPersonByCC(cc);
+        Info f;
+        if( p == null)
+            return null;
+        else{
+            for(Election e: eList){
+                if(p.getDep().equals(e.getDepartment()) && e.getStartTime().after(Calendar.getInstance()) && e.getEndTime().before(Calendar.getInstance()) ){ // TODO: Need to add condition, add starting time
+                    if(inVotingTables(e, curDepName))
+                        result.add(e);
+                }
+            }
+        }
+        f = new Info(p.getName(), p.getPassword(), result);
+        return f;
+    }
+
+    RMIServer(int port, int backup) throws RemoteException{
+        super();
+        this.port = port;
+        this.backUp = backup;
+        loader();
+    }
+
+    private boolean inVotingTables(Election e , String curDepName){
+        for(String s: e.getVotingTables()){
+            if(s.equals(curDepName)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     public int getPort(){
         return this.port;
     }
 
     public void setIsPrimary(boolean isPrimary){
         this.isPrimary = isPrimary;
+        loader();
     }
 
     public String heartbeat() throws RemoteException{
