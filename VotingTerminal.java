@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 public class VotingTerminal{
     private String numeroTerminal;
@@ -88,14 +89,7 @@ public class VotingTerminal{
             boolean keep = true;
             while(keep){//espera que o terminal esteja a ser usado
                if (this.discoverThread.getFree() == false) keep = false;
-               try{
-                   TimeUnit.SECONDS.sleep(1);
-               }
-               catch (Exception e){
-                   ;
-               }
             }
-            System.out.println("Nepia");
             //obter numero de cc
             System.out.println("Insert you cc number:");
             FutureTask<String> task = new FutureTask<String>(() -> {
@@ -117,9 +111,11 @@ public class VotingTerminal{
             //enviar a mesa de voto para verificacao
             //se receber uma mensagem igual a anterior significa que a mesa nao recebeu -> enviar outra vez
             //se receber a mensagem com as listas, continuar
+            System.out.println("wtf");
             keep = true;
             //construir datagrama -> basta faze-lo uma vez
             response = String.format("id|%s;type|auth;cc|%s;password|%s", this.numeroTerminal, cc, password);
+            System.out.println(response);
             bytesSend = response.getBytes();
             datagramSend = new DatagramPacket(bytesSend, bytesSend.length, this.group, this.portForVoting);
             while(keep){//embrulhar tudo em try catch para voltar a enviar a mensagem
@@ -132,6 +128,7 @@ public class VotingTerminal{
                         message = new String(datagramReceive.getData(), 0, datagramReceive.getLength());
 
                         words = splitStr(message);
+                        System.out.println(message);
                         if (words.size() > 3 &&words.get(0).equals("id") && words.get(1).equals(numeroTerminal)){
                             if (words.get(2).equals("type") && words.get(3).equals("error")){
                                 //ocorreu um erro na autenticacao
@@ -179,9 +176,9 @@ public class VotingTerminal{
                 if(choices != null) aux = choices.size() - 1;//se não for um int é considerado voto nulo
                 else System.exit(0);//erro, de alguma maneira as choices ficaram null
             }
-            Calendar currentTime = Calendar.getInstance();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyy/MM/dd-HH:mm");
-            response = String.format("id|%s;type|vote;list|%s;time|%s", this.numeroTerminal, choices.get(aux), sdf.format(currentTime));
+            Calendar currentTime = new GregorianCalendar();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd-HH:mm");
+            response = String.format("id|%s;type|vote;list|%s;time|%s", this.numeroTerminal, choices.get(aux), sdf.format(currentTime.getTime()));
             bytesSend = response.getBytes();
             datagramSend = new DatagramPacket(bytesSend, bytesSend.length, this.group, this.portForVoting);
 
@@ -198,6 +195,7 @@ public class VotingTerminal{
                         message = new String(datagramReceive.getData(), 0, datagramReceive.getLength());
 
                         words = splitStr(message);
+                        System.out.println(words);
                         if (words.size() > 3 && words.get(0).equals("id") && words.get(1).equals(numeroTerminal)){
                             if (words.get(2).equals("type") && words.get(3).equals("unlock")){
                                 keep = false;
@@ -238,11 +236,10 @@ public class VotingTerminal{
 }
 
 class DiscoveryThread implements Runnable{
-    private boolean free;
+    private volatile boolean free;
     private String ipForDiscovery;
     private String numeroTerminal;
     private int portForDiscovery;
-    public int count;
     Thread thread;
 
     public DiscoveryThread(String numeroTerminal, String ipForDiscovery, int portForDiscovery){
@@ -252,7 +249,6 @@ class DiscoveryThread implements Runnable{
         this.thread = new Thread(this, "discovery");
         this.free = true;//para inicializar como estando livre
         this.thread.start();
-        this.count = 1;
     }
 
     public void run(){
@@ -287,7 +283,10 @@ class DiscoveryThread implements Runnable{
                     }
 
                     else if(words.size() > 3 && words.get(1).equals(numeroTerminal) && words.get(2).equals("type") && words.get(3).equals("lock")){//dar lock
-                        System.out.println("locked");
+                        response = String.format("id|%s;type|locked", this.numeroTerminal);
+                        bytesSend = response.getBytes();
+                        datagramSend = new DatagramPacket(bytesSend, bytesSend.length,group, this.portForDiscovery);
+                        socket.send(datagramSend);
                         this.free = false;
                     }
                 //}

@@ -5,21 +5,36 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.io.*;
 import java.rmi.*;
 import java.util.concurrent.TimeUnit;
+
+import javax.swing.text.html.parser.DTD;
+
 import java.net.MulticastSocket;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.io.IOException;
 
 class RequestHandler extends Thread {
+    private String ip;
+    private int port;
+    private long sleep_time;
+    private int svPort;
+    private int backUpPort;
+    private int nTerminals;
+    String name;
     private int tHandler;
     private int tNumber;
     private String TableName;
     private CopyOnWriteArrayList<TerminalInfo> tInfo;
 
-    RequestHandler(CopyOnWriteArrayList<TerminalInfo> tInfo, String name) {
+    RequestHandler(String ip, int port, int svPort, int backUpIp, int nTerminals,
+            CopyOnWriteArrayList<TerminalInfo> tInfo, String name) {
+        this.ip = ip;
+        this.port = port;
+        this.svPort = svPort;
+        this.backUpPort = backUpIp;
+        this.nTerminals = nTerminals;
         this.tInfo = tInfo;
-        this.TableName = name;
-        System.out.println("thread Started");
+        this.name = name;
     }
 
     /*
@@ -37,33 +52,32 @@ class RequestHandler extends Thread {
      */
 
     public void run() {
-        String MULTICAST_ADDRESS = "224.3.2.1";
-        int PORT = 43210;
-        // Get the message
         MulticastSocket socket = null;
+        DatagramPacket packet, packetResponse;
+        String message, cc = "", password = "", list = "";
+        int curId;
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd-HH:mm");
+        String[] tokens, temp;
         try {
-            socket = new MulticastSocket(PORT);  // create socket and bind it
-            InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
+            socket = new MulticastSocket(this.port); // create socket and bind it
+            InetAddress group = InetAddress.getByName(this.ip);
             socket.joinGroup(group);
             while (true) {
-                byte[] buffer = new byte[256];
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                socket.receive(packet);
+                byte[] buffer = new byte[1024];
+                packetResponse = new DatagramPacket(buffer, buffer.length);
+                socket.receive(packetResponse);
 
-                System.out.println("Received packet from " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + " with message:");
-                String message = new String(packet.getData(), 0, packet.getLength());
+                System.out.println("Received packet from " + packetResponse.getAddress().getHostAddress() + ":"
+                        + packetResponse.getPort() + " with message:");
+                message = new String(packetResponse.getData(), 0, packetResponse.getLength());
                 System.out.println(message);
-                String[] temp;
-                String[] tokens = message.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\s+", "").split(";");
-                int curId;
-                String cc = "", password = "", list = "";
-                Calendar cal = Calendar.getInstance();
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd-HH:mm");
+                tokens = message.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\s+", "").split(";");
                 temp = tokens[0].split("\\|");
-                for (String t : temp) {
+               /*  for (String t : temp) {
                     System.out.println(t);
-                }
-                if (temp[0].equals("id")) {
+                } */
+                if (temp[0].equals("id") && !temp[1].equals("N")){
                     curId = Integer.parseInt(temp[1]);
                     temp = tokens[1].split("\\|");
 
@@ -76,9 +90,17 @@ class RequestHandler extends Thread {
                         if (temp[0].equals("password")) {
                             password = temp[1];
                         }
-                    // Password and cc saved here ready to send to RMI to confirm
-                        System.out.println(cc);
+                        // Password and cc saved here ready to send to RMI to confirm
+                       /*  System.out.println(cc);
                         System.out.println(password);
+                        System.out.println("bug"); */
+                        
+                        message = String.format("id|%d;type|list;itemcount|2; listitem1|Y;listitem2|Z",curId);
+                        buffer = message.getBytes();
+                        packet = new DatagramPacket(buffer, buffer.length, group, this.port);
+
+                        socket.send(packet);
+                        // TODO: Confirm with the RMI Server
 
                     }
                     if (temp[0].equals("type") && temp[1].equals("vote")) {
@@ -89,27 +111,31 @@ class RequestHandler extends Thread {
                         temp = tokens[3].split("\\|");
                         if (temp[0].equals("time")) {
                             System.out.println(temp[1]);
-                            try{
+                            try {
                                 cal.setTime(sdf.parse(temp[1]));
-                            }
-                            catch(ParseException e){
+                            } catch (ParseException e) {
                                 System.out.println("Something went wrong");
                             }
                         }
-                        System.out.println(cal.getTime()); 
-                        tInfo.get(curId).setV(new Vote(TableName,list, cal));
+                        System.out.println(cal.getTime());
+                        System.out.println(tInfo.size());
+                        tInfo.get(curId).setV(new Vote(TableName, list, cal));    
+                        message = String.format("id|%d;type|unlock;",curId);
+                        buffer = message.getBytes();
+                        packet = new DatagramPacket(buffer, buffer.length, group, this.port);
+                        socket.send(packet);
                     }
-                    
+
                 }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    socket.close();
-                }
-        //String message = "(id | 3 ; type | auth ; cc | X ; password | Y)";
-        //.String message = "(id | 3 ; type | vote ; list | test ; time | 2021/12/03-21:42)";
-        
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            socket.close();
+        }
+        // String message = "(id | 3 ; type | auth ; cc | X ; password | Y)";
+        // .String message = "(id | 3 ; type | vote ; list | test ; time |
+        // 2021/12/03-21:42)";
 
     }
 
@@ -173,11 +199,11 @@ public class VotingTable extends Thread {
     private int svPort;
     private int backUpPort;
     private int nTerminals;
+    String name;
     private CopyOnWriteArrayList<TerminalInfo> tInfo;
     private InputStreamReader input;
     private BufferedReader reader;
     private RMIServerInterface rmiSV;
-    String name;
 
     private RMIServerInterface connectRMI(long port1, long port2) {
         Boolean ok = false;
@@ -207,69 +233,87 @@ public class VotingTable extends Thread {
     }
 
     public void run() {
-        String cc;
+        String cc, responseMessage;
+        final String availabilityMessage = "id|*;type|availability";
         Info rmiInfo;
-        String MULTICAST_ADDRESS = "224.3.2.1";
-        int PORT = 4321;
         MulticastSocket socket = null;
+        byte[] buffer = availabilityMessage.getBytes();
+        byte[] response = new byte[1024];
+        InetAddress group;
+        DatagramPacket packet, packetResponse;
+        int curId;
+        String[] tokens, temp, temp2;
         this.input = new InputStreamReader(System.in);
         this.reader = new BufferedReader(input);
-        //this.rmiSV = connectRMI(svPort, backUpPort);
+        // this.rmiSV = connectRMI(svPort, backUpPort);
         while (true) {
             try {
                 System.out.println("Please Identify Yourself");
-                System.out.println("CC");
+                System.out.print("CC: ");
                 cc = this.reader.readLine();
             } catch (IOException e) {
                 System.out.println("There was an error");
             }
 
+            // TODO: RMI Connection
             // rmiInfo = rmiSV.getEligibleElection(cc);
             // Probe for an available Terminal
             try {
-                socket = new MulticastSocket(PORT);
-                String message = "id|*;type|availability";
-                String responseMessage;
-                byte[] buffer = message.getBytes();
-                byte[] response = new byte[256];
-                InetAddress group = InetAddress.getByName(MULTICAST_ADDRESS);
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length, group, PORT);
-                DatagramPacket packetResponse = new DatagramPacket(response, response.length);
-                int curId;
+                socket = new MulticastSocket(this.port);
+                group = InetAddress.getByName(this.ip);
                 socket.joinGroup(group);
-            while (true) {
-                System.out.println(MULTICAST_ADDRESS);
-                System.out.println(PORT);
-                socket.send(packet);
-                
-                socket.receive(packetResponse);
-                System.out.println("receid");
-                responseMessage = new String(packetResponse.getData(), 0, packetResponse.getLength());
-                System.out.println(responseMessage);
-                String[] tokens = responseMessage.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\s+", "").split(";");
-                String[] temp = tokens[0].split("\\|");
-                String[] temp2 = tokens[1].split("\\|");
-                System.out.println(temp[1]);
-                if (temp[0].equals("id") && !temp[1].equals("*") && temp2[0].equals("type") && temp2[1].equals("availability")) {
-                    curId = Integer.parseInt(temp[1]);
-                    System.out.println("Sending " + String.format("id|%d;type|lock",curId));
-                    response = String.format("id|%d;type|lock",curId).getBytes();
-                    packet = new DatagramPacket(response, response.length, group, PORT);
+                while (true) {
+                    response = new byte[1024];
+                    packetResponse = new DatagramPacket(response, response.length);
+                    packet = new DatagramPacket(buffer, buffer.length, group, this.port);
+                    System.out.println(this.ip);
+                    System.out.println(this.port);
                     socket.send(packet);
-                    break;
+
+                    socket.receive(packetResponse);
+                    System.out.println("receid");
+                    responseMessage = new String(packetResponse.getData(), 0, packetResponse.getLength());
+                    System.out.println(responseMessage);
+                    tokens = responseMessage.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\s+", "").split(";");
+                    temp = tokens[0].split("\\|");
+                    temp2 = tokens[1].split("\\|");
+                    System.out.println(temp[1]);
+                    if (temp[0].equals("id") && !temp[1].equals("*") && temp2[0].equals("type")
+                            && temp2[1].equals("availability")) {
+                        curId = Integer.parseInt(temp[1]);
+                        System.out.println("Sending " + String.format("id|%d;type|lock", curId));
+                        response = String.format("id|%d;type|lock", curId).getBytes();
+                        packet = new DatagramPacket(response, response.length, group, this.port);
+                        while (true) {
+                            socket.send(packet);
+                            socket.receive(packetResponse);
+                            responseMessage = new String(packetResponse.getData(), 0, packetResponse.getLength());
+                            System.out.println(responseMessage);
+                            tokens = responseMessage.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\s+", "").split(";");
+                            temp = tokens[0].split("\\|");
+                            temp2 = tokens[1].split("\\|");
+                            if (temp[0].equals("id") && temp[1].equals(String.valueOf(curId)) && temp2[0].equals("type")
+                                    && temp2[1].equals("locked"))
+                                break;
+                            else{
+                                System.out.println("welp");
+                            }
+
+                        }
+                        break;
+                    }
                 }
+                System.out.println("Found One");
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                socket.close();
             }
-            System.out.println("Found One");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    socket.close();
-                }
         }
     }
 
-    VotingTable(String ip, int port, int svPort, int backUpIp, int nTerminals,
-            CopyOnWriteArrayList<TerminalInfo> tInfo, String name) {
+    VotingTable(String ip, int port, int svPort, int backUpIp, int nTerminals, CopyOnWriteArrayList<TerminalInfo> tInfo,
+            String name) {
         this.ip = ip;
         this.port = port;
         this.svPort = svPort;
@@ -280,27 +324,27 @@ public class VotingTable extends Thread {
     }
 
     public static void main(String args[]) {
-       /*  String ip = args[0];
-        int port = Integer.parseInt((args[1]));
-        long sleep_time = Integer.parseInt((args[2]));
-        int svPort = Integer.parseInt((args[3]));
-        int BackupIP = Integer.parseInt((args[4]));
-        int nTerminais = Integer.parseInt((args[5])); */
+        /*
+         * String ip = args[0]; int port = Integer.parseInt((args[1])); long sleep_time
+         * = Integer.parseInt((args[2])); int svPort = Integer.parseInt((args[3])); int
+         * BackupIP = Integer.parseInt((args[4])); int nTerminais =
+         * Integer.parseInt((args[5]));
+         */
 
         String ip = "224.3.2.1";
         int port = 4321;
         long sleep_time = 5000;
         int svPort = 3099;
         int BackupIP = 4099;
-        int nTerminais = 1;
+        int nTerminais = 2;
         String name = "DEI";
-            
+
         CopyOnWriteArrayList<TerminalInfo> tInfo = new CopyOnWriteArrayList<>();
-        for (int i = 0; i < nTerminais; i++) {
+        for (int i = 0; i < nTerminais + 1; i++) {
             tInfo.add(new TerminalInfo(i));
         }
 
-        RequestHandler r = new RequestHandler(tInfo, "Nome");
+        RequestHandler r = new RequestHandler(ip, 43210, svPort, BackupIP, nTerminais, tInfo, name);
         VotingTable v = new VotingTable(ip, port, svPort, BackupIP, nTerminais, tInfo, name);
 
         v.start();
