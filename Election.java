@@ -17,7 +17,7 @@ public class Election implements Serializable {
 
    
 
-    Election(Calendar startTime, Calendar endTime, String description, String title, String department, CopyOnWriteArrayList<VotingList> lists, int type) {
+    Election(Calendar startTime, Calendar endTime, String description, String title, String department, CopyOnWriteArrayList<VotingList> lists, int type, CopyOnWriteArrayList<String> validDeps){
         super();
         this.startTime = startTime;
         this.endTime = endTime;
@@ -27,7 +27,7 @@ public class Election implements Serializable {
         this.lists = lists;
         this.department = department;
         this.type = type;
-        this.tables = new CopyOnWriteArrayList<String>();
+        this.tables = validDeps;
     }
 
     public long getUid() {

@@ -81,7 +81,7 @@ public class AdminConsole {
         long electionId;
         String name, response;
         int type;
-        CopyOnWriteArrayList<Long> members_uid = new CopyOnWriteArrayList<Long>();
+        CopyOnWriteArrayList<String> members = new CopyOnWriteArrayList<String>();
 
 
         try{
@@ -99,12 +99,16 @@ public class AdminConsole {
                 return false;
             }
             //pedir uids dos membros da lista
-            System.out.println("Insert the list's members separated by ',':");
-            for (String uid : this.reader.readLine().split(",")){
-                members_uid.add(Long.parseLong(uid));
+            System.out.println("Insert the list's members UID separated by ',':");
+            try{
+                for (String uid : this.reader.readLine().split(",")){
+                    members.add(uid);
+                }
+            }catch(IOException e){
+                System.out.println("WTF");
             }
 
-            response = this.rmiSv.createVotingList(electionId, name, type, members_uid);
+            response = this.rmiSv.createVotingList(electionId, name, type, members);
             if(response.equals("")) return true;
             else{
                 System.out.println(response);//dizer o que esta errado
@@ -183,12 +187,12 @@ public class AdminConsole {
             }
             else{
                 date_fields = aux.split("/");
-                startTime.set(Integer.parseInt(date_fields[0]), Integer.parseInt(date_fields[1]), Integer.parseInt(date_fields[2]), Integer.parseInt(date_fields[3]), Integer.parseInt(date_fields[4]));
+                startTime.set(Integer.parseInt(date_fields[0]), Integer.parseInt(date_fields[1]) - 1, Integer.parseInt(date_fields[2]), Integer.parseInt(date_fields[3]), Integer.parseInt(date_fields[4]));
                 //verify if the starting date is valid
-                if (startTime.before(Calendar.getInstance())){
+               /*  if (startTime.before(Calendar.getInstance())){
                     System.out.println("The starting date is invalid.");
                     return false;
-                }
+                } */
             }
             //obter a data de fim da votacao
             System.out.println("Insert the election's ending date (yyyy/MM/dd/hh/mm):");
@@ -200,7 +204,7 @@ public class AdminConsole {
             }
             else{
                 date_fields = aux.split("/");
-                endTime.set(Integer.parseInt(date_fields[0]), Integer.parseInt(date_fields[1]), Integer.parseInt(date_fields[2]), Integer.parseInt(date_fields[3]), Integer.parseInt(date_fields[4]));
+                endTime.set(Integer.parseInt(date_fields[0]), Integer.parseInt(date_fields[1]) -1, Integer.parseInt(date_fields[2]), Integer.parseInt(date_fields[3]), Integer.parseInt(date_fields[4]));
                 //verify if the starting date is valid
                 if (endTime.before(Calendar.getInstance())){
                     System.out.println("The ending date is invalid.");
@@ -215,8 +219,9 @@ public class AdminConsole {
                     return false;
                 }
             }
-
-            if (option == 0) response = this.rmiSv.createElection(startTime, endTime, description, title, department, type);
+            CopyOnWriteArrayList<String> validDeps = new CopyOnWriteArrayList<>();
+            validDeps.add(department);
+            if (option == 0) response = this.rmiSv.createElection(startTime, endTime, description, title, department, type, validDeps);
             else if (option == 1) response = this.rmiSv.updateElection(uid, startTime, endTime, description, title, department);
             else response = "Wrong option.";
             if (response.equals("")) return true;

@@ -139,7 +139,7 @@ public class VotingTerminal{
                                 //array com todas as possibilidades + blank + null
                                 choices = new ArrayList<String>();
                                 //salta o par item_count|number
-                                for (int i = 6; i < words.size(); i += 2){
+                                for (int i = 7; i < words.size(); i += 2){
                                     choices.add(words.get(i));
                                 }
                                 choices.add("blank");
