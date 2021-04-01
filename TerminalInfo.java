@@ -69,7 +69,7 @@ public class TerminalInfo implements Serializable {
     TerminalInfo(int tNr, ArrayList<Election> e, Person p){
         this.tNr = tNr;
         this.v = null;
-        this.state = true;
+        this.state = false;
         this.validElections = e;
         this.p = p;
     } 

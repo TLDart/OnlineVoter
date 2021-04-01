@@ -111,6 +111,10 @@ public class Person implements Serializable{
         }
         return true;
     }
+    public void addVotedElections(Vote v){
+        v.setName("CONFIDENTIAL");
+        this.votedElections.add(v);
+    }
 
     public String toString(){
         String type_str = "";

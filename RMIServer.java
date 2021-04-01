@@ -10,36 +10,38 @@ import java.io.*;
 import java.rmi.*;
 import java.util.concurrent.*;
 
-
-public class RMIServer extends UnicastRemoteObject implements RMIServerInterface{
+public class RMIServer extends UnicastRemoteObject implements RMIServerInterface {
     private CopyOnWriteArrayList<Person> pList;
     private CopyOnWriteArrayList<Election> eList;
-    private int port; 
-    private int backUp; 
+    private int port;
+    private int backUp;
     private long lastElectionUid;
     private long lastPersonUid;
     String db = "data/db.csv";
     String db2 = "data/db2.csv";
     private boolean isPrimary = false;
-    private Person getUserByUid(long uid){
-        for (Person p : this.pList){
-            if (p.getUid() == uid){
+
+    private Person getUserByUid(long uid) {
+        for (Person p : this.pList) {
+            if (p.getUid() == uid) {
                 return p;
             }
         }
         return null;
     }
 
-    //verify if a voting list with a certain name already exists, if so it is returned
-    private VotingList searchVotingList(Election election, String vlName){
-        for (VotingList vl : election.getLists()){
-            if (vlName.equals(vl.getName())) return vl;
+    // verify if a voting list with a certain name already exists, if so it is
+    // returned
+    private VotingList searchVotingList(Election election, String vlName) {
+        for (VotingList vl : election.getLists()) {
+            if (vlName.equals(vl.getName()))
+                return vl;
         }
         return null;
     }
 
     private Object loadObjectFile(String path) {
-            Object obj;
+        Object obj;
         try {
             FileInputStream fileObj = new FileInputStream(path);
             ObjectInputStream inputStreamObj = new ObjectInputStream(fileObj);
@@ -47,11 +49,12 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             inputStreamObj.close();
             fileObj.close();
             return obj;
-        } catch (IOException | ClassNotFoundException e){
+        } catch (IOException | ClassNotFoundException e) {
             return null;
         }
 
     }
+
     public static boolean saveObjectFile(String path, Object object) {
         try {
             FileOutputStream objFile = new FileOutputStream(path);
@@ -66,89 +69,99 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
     }
 
-    public Election searchElectionById(long uid){
-        for(Election e: eList){
-            if(e.getUid() == uid){
+    public Election searchElectionById(long uid) {
+        for (Election e : eList) {
+            if (e.getUid() == uid) {
                 return e;
             }
         }
         return null;
     }
 
-    public boolean registerUser(Person p) throws RemoteException{
+    public boolean registerUser(Person p) throws RemoteException {
         p.setUid(++lastPersonUid);
         pList.add(p);
         System.out.println(p.getName());
         saveObjectFile(db, pList);
         return true;
     }
-    public boolean createElection(Election e) throws RemoteException{
+
+    public boolean createElection(Election e) throws RemoteException {
         e.setUid(++lastElectionUid);
         return eList.add(e);
     }
 
-    // public boolean createVotingList(long electionId, String name, int type, CopyOnWriteArrayList<Long> members_uid){
-    //     CopyOnWriteArrayList<Person> members = new CopyOnWriteArrayList<Person>();
-    //     Person p;
-    //     Election election;
-    //     //encontrar as pessoas da lista
-    //     for (long uid : members_uid){
-    //         p = this.getUserByUid(uid);
-    //         if (p != null) members.add(p);
-    //     }
-    //     //encontar a eleicao
-    //     election = this.searchElectionById(electionId);
-    //     election.getLists().add(new VotingList(name, type, members));
-
-    //     return true;
+    // public boolean createVotingList(long electionId, String name, int type,
+    // CopyOnWriteArrayList<Long> members_uid){
+    // CopyOnWriteArrayList<Person> members = new CopyOnWriteArrayList<Person>();
+    // Person p;
+    // Election election;
+    // //encontrar as pessoas da lista
+    // for (long uid : members_uid){
+    // p = this.getUserByUid(uid);
+    // if (p != null) members.add(p);
     // }
-    public String createVotingList(long electionId, String name, int type, CopyOnWriteArrayList<String> members){
-        String response = "";//if empty it was sucessful, otherwise it says what was wrong with the request
+    // //encontar a eleicao
+    // election = this.searchElectionById(electionId);
+    // election.getLists().add(new VotingList(name, type, members));
+
+    // return true;
+    // }
+    public String createVotingList(long electionId, String name, int type, CopyOnWriteArrayList<String> members) {
+        String response = "";// if empty it was sucessful, otherwise it says what was wrong with the request
         Person p;
 
-        //get the election
+        // get the election
         Election election = this.searchElectionById(electionId);
-        if (election == null) response = response + "Election Id doesnt exist.\n"; //TODO check here if something should be returned
-        else{
-            //verify if there's already a list with the same name for this election
-            if(this.searchVotingList(election, name) != null) response = response + "A list with the given name already exists.\n";
+        if (election == null)
+            response = response + "Election Id doesnt exist.\n"; // TODO check here if something should be returned
+        else {
+            // verify if there's already a list with the same name for this election
+            if (this.searchVotingList(election, name) != null)
+                response = response + "A list with the given name already exists.\n";
         }
 
-        //add members and check if the id is valid
-        /* for (long uid : members_uid){
-            p = this.getUserByUid(uid);
-            if(p == null) response = response + String.format("Uid %lu doesnt exist.%n", uid);
-            else if(p.getType() != type) response = response + String.format("Uid %lu doesnt have the same type as the list.", uid);
-            else members.add(p);
-        } */
+        // add members and check if the id is valid
+        /*
+         * for (long uid : members_uid){ p = this.getUserByUid(uid); if(p == null)
+         * response = response + String.format("Uid %lu doesnt exist.%n", uid); else
+         * if(p.getType() != type) response = response +
+         * String.format("Uid %lu doesnt have the same type as the list.", uid); else
+         * members.add(p); }
+         */
 
-        //check type
-        if (election != null && election.getType() != type) response = response + "Type is different from the election's type.";
+        // check type
+        if (election != null && election.getType() != type)
+            response = response + "Type is different from the election's type.";
 
-        //no errors, add voting list to election
-        if(response.equals("")){
+        // no errors, add voting list to election
+        if (response.equals("")) {
             election.getLists().add(new VotingList(name, type, members));
             saveObjectFile(db2, eList);
         }
 
-
         return response;
     }
 
-    public String createElection(Calendar startTime, Calendar endTime, String description, String title, String department, int type, CopyOnWriteArrayList<String> validDeps){
+    public String createElection(Calendar startTime, Calendar endTime, String description, String title,
+            String department, int type, CopyOnWriteArrayList<String> validDeps) {
         String response = "";
         Election e;
-        //verify if there is other election with the same name at the same time in the same departement for the same public
-        for (Election election : this.eList){
-            if (election.getTitle().equals(title) && election.getDepartment().equals(department) && election.getType() == type){
-                if (election.getStartTime().before(endTime) || startTime.before(election.getEndTime())) return  "There is another election with the same name in the same department with overlapping time intervals.";
+        // verify if there is other election with the same name at the same time in the
+        // same departement for the same public
+        for (Election election : this.eList) {
+            if (election.getTitle().equals(title) && election.getDepartment().equals(department)
+                    && election.getType() == type) {
+                if (election.getStartTime().before(endTime) || startTime.before(election.getEndTime()))
+                    return "There is another election with the same name in the same department with overlapping time intervals.";
             }
         }
 
-        //create the election
-        e = new Election(startTime, endTime, description, title, department, new CopyOnWriteArrayList<VotingList>(), type, validDeps);
+        // create the election
+        e = new Election(startTime, endTime, description, title, department, new CopyOnWriteArrayList<VotingList>(),
+                type, validDeps);
         e.setUid(++lastElectionUid);
-        if (response.equals("")){
+        if (response.equals("")) {
             this.eList.add(e);
             saveObjectFile(db2, eList);
         }
@@ -156,180 +169,231 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return response;
     }
 
-    public String updateElection(long uid, Calendar startTime, Calendar endTime, String description, String title, String department){
+    public String updateElection(long uid, Calendar startTime, Calendar endTime, String description, String title,
+            String department) {
         String response = "";
         Election election = this.searchElectionById(uid);
-        if(election == null) return "Uid doens't exist.";
-        if(election.getStartTime().before(Calendar.getInstance())) return "You cannot update this Election";
+        if (election == null)
+            return "Uid doens't exist.";
+        if (election.getStartTime().before(Calendar.getInstance()))
+            return "You cannot update this Election";
 
-        if (startTime != null && endTime != null){
+        if (startTime != null && endTime != null) {
             election.setStartTime(startTime);
             election.setEndTime(endTime);
+        } else if (startTime != null && endTime == null) {
+            if (election.getEndTime().before(startTime))
+                return "Starting time after the existing ending time.";
+            else
+                election.setStartTime(startTime);
+        } else if (endTime != null) {
+            if (endTime.before(election.getStartTime()))
+                return "Ending time before the existing starting time.";
+            else
+                election.setEndTime(endTime);
         }
-        else if(startTime != null && endTime == null){
-            if(election.getEndTime().before(startTime)) return "Starting time after the existing ending time.";
-            else election.setStartTime(startTime);
-        }
-        else if(endTime != null){
-            if(endTime.before(election.getStartTime())) return "Ending time before the existing starting time.";
-            else election.setEndTime(endTime);
-        }
-        if(description != null) election.setDescription(description);
-        if(department != null) election.setDepartment(department);
-        if(title != null) election.setTitle(title);
-        
+        if (description != null)
+            election.setDescription(description);
+        if (department != null)
+            election.setDepartment(department);
+        if (title != null)
+            election.setTitle(title);
+
         return response;
     }
 
-    //get a list with the people of a certain department of a certain type
-    public ArrayList<Person> getListUsers(String department, int type){
+    // get a list with the people of a certain department of a certain type
+    public ArrayList<Person> getListUsers(String department, int type) {
         ArrayList<Person> result = new ArrayList<Person>();
-        for (Person p : this.pList){
-            if (p.getDep().equals(department) && p.getType() == type) result.add(p);
+        for (Person p : this.pList) {
+            if (p.getDep().equals(department) && p.getType() == type)
+                result.add(p);
         }
         return result;
     }
 
-    public ArrayList<Election> getListElections(String department, int type){
+    public ArrayList<Election> getListElections(String department, int type) {
         ArrayList<Election> result = new ArrayList<Election>();
-        for (Election e : this.eList){
-            if (e.getDepartment().equals(department) && e.getType() == type) result.add(e);
+        for (Election e : this.eList) {
+            if (e.getDepartment().equals(department) && e.getType() == type)
+                result.add(e);
         }
         return result;
     }
 
-    public void test(String msg) throws RemoteException{
+    public void test(String msg) throws RemoteException {
         System.out.println(msg);
     }
 
-    private void loader(){
+    private void loader() {
         Object t1 = this.loadObjectFile(db);
         Object t2 = this.loadObjectFile(db2);
-        if(t1 != null){
+        if (t1 != null) {
             this.pList = (CopyOnWriteArrayList<Person>) t1;
             this.lastPersonUid = this.pList.size();
+        } else {
+            this.pList = new CopyOnWriteArrayList<>();
         }
-        else{
-            this.pList =  new CopyOnWriteArrayList<>();
-        }
-        if(t2 != null){
+        if (t2 != null) {
             this.eList = (CopyOnWriteArrayList<Election>) t2;
             this.lastElectionUid = this.eList.size();
-        }
-        else{
-            this.eList =  new CopyOnWriteArrayList<>();
+        } else {
+            this.eList = new CopyOnWriteArrayList<>();
         }
         System.out.println(this.lastElectionUid);
         System.out.println(this.lastPersonUid);
     }
 
-    public Person getPersonByCC(int cc){
-        for(Person p : pList){
+    public Person getPersonByCC(int cc) {
+        for (Person p : pList) {
             System.out.println(String.format("User %s", p.getName()));
             System.out.println(p.getCcNr());
             System.out.println(cc);
-            if(p.getCcNr() == cc){
+            if (p.getCcNr() == cc) {
                 return p;
             }
         }
         return null;
     }
 
-    public TerminalInfo getPersonInfo(int cc, String curDepName){
+    public TerminalInfo getPersonInfo(int cc, String curDepName) {
         ArrayList<Election> result = new ArrayList<Election>();
         Person p = getPersonByCC(cc);
-        if(p == null)
+        if (p == null)
             return new TerminalInfo(-1, result, p);
-        else{
-            for(Election e: eList){
+        else {
+            for (Election e : eList) {
                 System.out.println(e.getTitle());
-                System.out.println(String.format("%b %b %b", p.getDep().equals(e.getDepartment()), e.getStartTime().before(Calendar.getInstance()), e.getEndTime().after(Calendar.getInstance())));
-                System.out.println(String.format("%s %s", e.getStartTime().getTime() , Calendar.getInstance().getTime()));
-                if(p.getDep().equals(e.getDepartment()) && e.getStartTime().before(Calendar.getInstance()) && e.getEndTime().after(Calendar.getInstance()) ){ //
+                System.out.println(String.format("%b %b %b", p.getDep().equals(e.getDepartment()),
+                        e.getStartTime().before(Calendar.getInstance()), e.getEndTime().after(Calendar.getInstance())));
+                System.out
+                        .println(String.format("%s %s", e.getStartTime().getTime(), Calendar.getInstance().getTime()));
+                if (p.getDep().equals(e.getDepartment()) && e.getStartTime().before(Calendar.getInstance())
+                        && e.getEndTime().after(Calendar.getInstance())) { //
                     System.out.println(inVotingTables(e, curDepName));
-                    System.out.println(p.notVoted(e));  
-                    if(inVotingTables(e, curDepName) && p.notVoted(e)) // If the current Voting table is valid and the user did not vote before
+                    System.out.println(p.notVoted(e));
+                    if (inVotingTables(e, curDepName) && p.notVoted(e)) // If the current Voting table is valid and the
+                                                                        // user did not vote before
                         result.add(e);
                 }
             }
         }
-        TerminalInfo tInfo =new TerminalInfo(-1, result, p);
+        TerminalInfo tInfo = new TerminalInfo(-1, result, p);
         return tInfo;
     }
 
-    RMIServer(int port, int backup) throws RemoteException{
+    public void processVote(TerminalInfo tInfo) throws RemoteException {
+        System.out.println("started Processing");
+        Election temp = null;
+        if (tInfo.getV() == null || tInfo.getP() == null)
+            System.out.println("SOmething went wrong");
+        else {
+            for (Election e : this.eList) {
+                if (e.getUid() == tInfo.getV().getElectionUid()) {
+                    temp = e;
+                    if (tInfo.getV().getListName() == "null") {
+                        e.addNull();
+                    } else if (tInfo.getV().getListName() == "blank") {
+                        e.addBlank();
+                    }
+                    else {
+                        for (VotingList v : e.getLists()) {
+                            System.out.println(v.getName()); 
+                            System.out.println(tInfo.getV().getListName());
+                            if(v.getName().equals(tInfo.getV().getListName())){
+                                v.addCounter();
+                                System.out.println(v);
+                                break;
+                            }
+                        }
+                    }
+                break;
+                }
+            }
+            for (Person p : this.pList) {
+                if (p.getCcNr() == tInfo.getP().getCcNr()) {
+                    p.addVotedElections(tInfo.getV());
+                }
+            }
+            System.out.println("REached end");
+            tInfo.setState(true);
+            saveObjectFile(db2, eList);
+            saveObjectFile(db, pList);
+        }
+
+    }
+
+    RMIServer(int port, int backup) throws RemoteException {
         super();
         this.port = port;
         this.backUp = backup;
         loader();
     }
 
-    private boolean inVotingTables(Election e , String curDepName){
-        for(String s: e.getVotingTables()){
-            if(s.equals(curDepName)){
+    private boolean inVotingTables(Election e, String curDepName) {
+        for (String s : e.getVotingTables()) {
+            if (s.equals(curDepName)) {
                 return true;
             }
         }
         return false;
     }
 
-    public int getPort(){
+    public int getPort() {
         return this.port;
     }
 
-    public void setIsPrimary(boolean isPrimary){
+    public void setIsPrimary(boolean isPrimary) {
         this.isPrimary = isPrimary;
         loader();
     }
 
-    public String heartbeat() throws RemoteException{
+    public String heartbeat() throws RemoteException {
         return "ACK";
     }
+
     public static void main(String[] args) throws RemoteException {
         int port = Integer.parseInt(args[0]);
         int backup = Integer.parseInt(args[1]);
         int counter = 0;
         RMIServerInterface svBack = null;
-        while(counter < 5){
-            try{
-                svBack = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s","localhost",backup,"SV"));
-                System.out.println(String.format("//%s:%d/%s","localhost",backup,"SV"));
+        while (counter < 5) {
+            try {
+                svBack = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s", "localhost", backup, "SV"));
+                System.out.println(String.format("//%s:%d/%s", "localhost", backup, "SV"));
                 counter = 10;
-            }
-            catch(Exception e){
+            } catch (Exception e) {
                 counter++;
                 System.out.println(e.getMessage());
             }
-            try{
-                TimeUnit.SECONDS.sleep(1); //TODO check this try catch
-            }
-            catch(InterruptedException e){
+            try {
+                TimeUnit.SECONDS.sleep(1); // TODO check this try catch
+            } catch (InterruptedException e) {
                 return;
             }
         }
-        counter = (counter == 10) ? 0: 5;
-        while(counter < 5){
-            try{
-                if(svBack != null)
+        counter = (counter == 10) ? 0 : 5;
+        while (counter < 5) {
+            try {
+                if (svBack != null)
                     svBack.heartbeat();
                 counter = 0;
                 System.out.println("HeartBeat Successful");
-            }
-            catch(RemoteException e){// This means that the other server is down, and therefore we check if we assume primary
+            } catch (RemoteException e) {// This means that the other server is down, and therefore we check if we
+                                         // assume primary
                 System.out.println("Remote server failed");
                 counter++;
             }
-            try{
-                TimeUnit.SECONDS.sleep(1); //TODO check this try catch
-            }
-            catch(InterruptedException e){
+            try {
+                TimeUnit.SECONDS.sleep(1); // TODO check this try catch
+            } catch (InterruptedException e) {
                 return;
             }
         }
         RMIServerInterface sv = new RMIServer(port, backup);
-		LocateRegistry.createRegistry(sv.getPort()).rebind("SV", sv);
-		System.out.println("Server ready...");
+        LocateRegistry.createRegistry(sv.getPort()).rebind("SV", sv);
+        System.out.println("Server ready...");
         sv.setIsPrimary(true);
         System.out.println("Changed to primary");
-	}
+    }
 }

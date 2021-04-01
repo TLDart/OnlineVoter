@@ -17,6 +17,7 @@ public interface RMIServerInterface extends Remote {
     public void setIsPrimary(boolean isPrimary) throws RemoteException;
     public String heartbeat() throws RemoteException;
     public TerminalInfo getPersonInfo(int cc, String name) throws RemoteException;
+    public void processVote(TerminalInfo tInfo) throws RemoteException;
     //public Info getEligibleElection(int cc);
     //boolean verify User(long id, String dep) throws RemoteException;
 }

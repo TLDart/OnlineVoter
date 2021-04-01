@@ -14,6 +14,8 @@ public class Election implements Serializable {
     private String department;
     private int type;
     private CopyOnWriteArrayList<String> tables;
+    private long voteCountNull;
+    private long voteCountBlank; 
 
    
 
@@ -28,6 +30,8 @@ public class Election implements Serializable {
         this.department = department;
         this.type = type;
         this.tables = validDeps;
+        this.voteCountBlank = 0;
+        this.voteCountNull = 0;
     }
 
     public long getUid() {
@@ -108,6 +112,12 @@ public class Election implements Serializable {
 
     public void setVotingTables(CopyOnWriteArrayList<String> tables ){
         this.tables = tables;
+    }
+    public void addNull(){
+        this.voteCountNull++;
+    }
+    public void addBlank(){
+        this.voteCountBlank++;
     }
 
     public String toString(){

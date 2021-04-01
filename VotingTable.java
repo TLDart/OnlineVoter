@@ -27,6 +27,8 @@ class RequestHandler extends Thread {
     private int tNumber;
     private String TableName;
     private CopyOnWriteArrayList<TerminalInfo> tInfo;
+    RMIServerInterface rmiSv;
+    
 
     RequestHandler(String ip, int port, int svPort, int backUpIp, int nTerminals,
             CopyOnWriteArrayList<TerminalInfo> tInfo, String name) {
@@ -39,19 +41,31 @@ class RequestHandler extends Thread {
         this.name = name;
     }
 
-    /*
-     * private RMIServerInterface connectRMI(long port1, long port2) { Boolean ok =
-     * false; RMIServerInterface rmiSv; while (true) { try { rmiSv =
-     * (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s", ip, port1,
-     * "SV")); rmiSv.heartbeat(); return rmiSv; } catch (Exception e) { System.out.
-     * println("Server 1 is not currently Available , switch to backup server" +
-     * e.getMessage()); } try { rmiSv = (RMIServerInterface)
-     * Naming.lookup(String.format("//%s:%d/%s", ip, port2, "SV"));
-     * rmiSv.heartbeat(); return rmiSv; } catch (Exception e) { System.out.
-     * println("Server 2 is currently also not available, waiting for connection" +
-     * e.getMessage()); rmiSv = null; } try { TimeUnit.SECONDS.sleep(1); } catch
-     * (Exception e) { ; } } }
-     */
+    private RMIServerInterface connectRMI(String ip) {
+        RMIServerInterface rmiSv;
+        while (true) {
+            try {
+                rmiSv = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s", ip, this.svPort, "SV"));
+                rmiSv.heartbeat();
+                return rmiSv;
+            } catch (Exception e) {
+                System.out.println("Server 1 is not currently Available , switch to backup server" + e.getMessage());
+            }
+            try {
+                rmiSv = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s", ip, this.backUpPort, "SV"));
+                rmiSv.heartbeat();
+                return rmiSv;
+            } catch (Exception e) {
+                System.out.println("Server 2 is currently also not available, waiting for connection" + e.getMessage());
+                rmiSv = null;
+            }
+            try {
+                TimeUnit.SECONDS.sleep(1);
+            } catch (Exception e) {
+                ;
+            }
+        }
+    }
 
     public void run() {
         MulticastSocket socket = null;
@@ -61,6 +75,13 @@ class RequestHandler extends Thread {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd-HH:mm");
         String[] tokens, temp;
+
+        this.rmiSv = connectRMI("localhost");
+        try {
+            this.rmiSv.heartbeat();
+        } catch (Exception e) {
+            System.out.println("Something went wrong");
+        }
         try {
             socket = new MulticastSocket(this.port); // create socket and bind it
             InetAddress group = InetAddress.getByName(this.ip);
@@ -137,8 +158,25 @@ class RequestHandler extends Thread {
                         }
                         System.out.println(cal.getTime());
                         System.out.println(tInfo.size());
-                        tInfo.get(curId).setV(new Vote(TableName, list, cal));
-                        //TODO:Continue Here
+                        tInfo.get(curId).setV(new Vote(this.tInfo.get(curId).getValidElections().get(this.tInfo.get(curId).getOption()).getUid(),TableName, list, cal));
+                        
+                        System.out.println(tInfo.get(curId).getState());
+                        if(tInfo.get(curId).getState() == false){//Avoid Voting twice
+                            tInfo.get(curId).setState(true);
+                            while(true){
+                                try{
+                                    System.out.println("Tried");
+                                    this.rmiSv.processVote(tInfo.get(curId));
+                                    break;
+                                }
+                                catch(RemoteException e){
+                                    this.rmiSv = connectRMI("localhost");
+                                    System.out.println("Something fucked up" + e.getMessage());
+
+                                }
+                            }
+                        }
+
                         message = String.format("id|%d;type|unlock;", curId);
                         buffer = message.getBytes();
                         packet = new DatagramPacket(buffer, buffer.length, group, this.port);

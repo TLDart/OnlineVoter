@@ -21,6 +21,10 @@ public class VotingList implements Serializable {
         return this.name;
     }
 
+    public void addCounter(){
+        this.voteCount++;
+    }
+
     public String toString(){
         return String.format("List name: %s | Number of votes: %d", this.name, this.voteCount);
     }
