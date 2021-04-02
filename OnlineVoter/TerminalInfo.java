@@ -1,3 +1,4 @@
+package OnlineVoter;
 import java.io.Serializable;
 import java.util.*;
 public class TerminalInfo implements Serializable {

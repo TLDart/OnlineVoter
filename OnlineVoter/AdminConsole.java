@@ -1,15 +1,10 @@
+package OnlineVoter;
 import java.rmi.*;
 import java.net.MalformedURLException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.swing.text.DefaultEditorKit.CopyAction;
-
-//import org.graalvm.compiler.nodes.java.ArrayLengthNode;
-
-import jdk.jshell.spi.ExecutionControl.ExecutionControlException;
 
 public class AdminConsole {
     private RMIServerInterface rmiSv;

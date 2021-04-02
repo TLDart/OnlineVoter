@@ -1,3 +1,4 @@
+package OnlineVoter;
 import java.io.Serializable;
 import java.util.Calendar;
 public class Vote implements Serializable{
