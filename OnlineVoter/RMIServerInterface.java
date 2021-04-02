@@ -18,4 +18,6 @@ public interface RMIServerInterface extends Remote {
     public String heartbeat() throws RemoteException;
     public TerminalInfo getPersonInfo(int cc, String name) throws RemoteException;
     public void processVote(TerminalInfo tInfo) throws RemoteException;
+    public void subscribe(AdminConsoleInterface adminConsole) throws RemoteException;
+    public String finishedElectionData(long electionId) throws RemoteException;
 }

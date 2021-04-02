@@ -1,12 +1,13 @@
 package OnlineVoter;
 import java.rmi.*;
+import java.rmi.server.UnicastRemoteObject;
 import java.net.MalformedURLException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class AdminConsole {
+public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInterface{
     private RMIServerInterface rmiSv;
     private InputStreamReader input;
     private BufferedReader reader;
@@ -14,6 +15,7 @@ public class AdminConsole {
     private String svName;
     private int port;
     private int backup;
+    private boolean showRealTimeData;
 
     public  boolean regPerson(){
         //ler da consola
@@ -54,6 +56,9 @@ public class AdminConsole {
             ccValidity.set(Integer.parseInt(date_fields[0]), Integer.parseInt(date_fields[1]) - 1, Integer.parseInt(date_fields[2]));
         }catch(IOException e){
             System.out.println("IOException: " + e.getMessage());
+            return false;
+        }catch(NumberFormatException e){
+            System.out.println("NumberFormatException: " + e.getMessage());
             return false;
         }
 
@@ -112,6 +117,9 @@ public class AdminConsole {
         }
         catch(IOException e){
             System.out.println("IOException: " + e.getMessage());
+            return false;
+        }catch(NumberFormatException e){
+            System.out.println("NumberFormatException: " + e.getMessage());
             return false;
         }
     }
@@ -228,6 +236,9 @@ public class AdminConsole {
         catch(IOException e){
             System.out.println("IOException: " + e.getMessage());
             return false;
+        }catch(NumberFormatException e){
+            System.out.println("NumberFormatException: " + e.getMessage());
+            return false;
         }
     }
 
@@ -253,6 +264,8 @@ public class AdminConsole {
         }
         catch(IOException e){
             System.out.println("IOException: " + e.getMessage());
+        }catch(NumberFormatException e){
+            System.out.println("NumberFormatException: " + e.getMessage());
         }
     }
 
@@ -281,6 +294,44 @@ public class AdminConsole {
         }
         catch(IOException e){
             System.out.println("IOException: " + e.getMessage());
+        }catch(NumberFormatException e){
+            System.out.println("NumberFormatException: " + e.getMessage());
+        }
+    }
+
+    private void realTimeData(){
+        //mostrar real time data
+        this.showRealTimeData = true;
+        try{
+            this.reader.readLine();
+        }catch(IOException e){
+            System.out.println("IOException: " + e.getMessage());
+        }
+        //se o user interagir com a consola desativa esta funcionalidade e volta ao menu
+        this.showRealTimeData = false;
+    }
+
+    public void showFinishedEletcionData(){
+        try{
+            System.out.println("Insert election's uid.");
+            String aux = this.reader.readLine();
+            long electionId = Long.parseLong(aux);
+            String response = this.rmiSv.finishedElectionData(electionId);
+            if (response.equals("")){
+                System.out.println("Invalid election's uid.");
+            }
+            else{
+                System.out.println(response);
+            }
+        }
+        catch(RemoteException rE){
+            //server down?
+        }
+        catch(IOException e){
+            System.out.println("IOException: " + e.getMessage());
+        }
+        catch(NumberFormatException e){
+            System.out.println("NumberFormatException: " + e.getMessage());
         }
     }
 
@@ -290,7 +341,7 @@ public class AdminConsole {
         while(!stop){
             try{
                 System.out.println("---------------------------------------------");
-                System.out.println("Choose an option:\n1 - Register user\n2 - Create election\n3 - Create a voting list\n4 - Show users from a department and a certain type\n5 - Show elections from a department and a certain type\n6 - Update election\n0 - exit");
+                System.out.println("Choose an option:\n1 - Register user\n2 - Create election\n3 - Create a voting list\n4 - Show users from a department and a certain type\n5 - Show elections from a department and a certain type\n6 - Update election\n7 - Show finished election's data.\n8 - Show real time data.\n0 - exit");
                 option = Integer.parseInt(this.reader.readLine());
                 if (option == 1) this.regPerson();
                 else if (option == 2) this.regElection(0);
@@ -298,12 +349,15 @@ public class AdminConsole {
                 else if (option == 4) this.showUsers();
                 else if (option == 5) this.showElections();
                 else if (option == 6) this.regElection(1);
+                else if (option == 7) this.showFinishedEletcionData();
+                else if (option == 8) this.realTimeData();
                 else if (option == 0) stop = true;
             }
             catch(IOException e){
                 System.out.println("IOException: " + e.getMessage());
             }
         }
+        System.exit(0);
     }
 
     private void selectServer(){
@@ -328,22 +382,43 @@ public class AdminConsole {
         }while(this.rmiSv == null);
     }
 
-    AdminConsole(String ip, String svName, int port, int backup){
+    public void printOnConsole(String s) throws RemoteException{
+        if(this.showRealTimeData){
+            System.out.println(s);
+        }
+    }
+
+    AdminConsole(String ip, String svName, int port, int backup) throws RemoteException{
         this.ip =  ip;
         this.svName = svName;
         this.port = port;
         this.backup = backup;
+        this.showRealTimeData = false;
 
         this.input = new InputStreamReader(System.in);
         this.reader = new BufferedReader(input);
         try{
+            // System.out.println("here1");
+            // System.setSecurityManager(new SecurityManager());
+            // System.setProperty("java.security.policy","file:./OnlineVoter/security.policy");
             this.rmiSv = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s",ip,port,svName));
+            //System.out.println("here2");
             this.rmiSv.test("Sending MSg");
             //this.regPerson();
+            this.rmiSv.subscribe((AdminConsoleInterface) this);
             this.menu();
         }
-        catch(Exception e){
-            System.out.println("there was an error.\n" + e.getMessage());
+        // catch(Exception e){
+        //     System.out.println("there was an error.\n" + e.getMessage());
+        // }
+        catch(RemoteException e){
+            System.out.println("RemoteException: " + e.getMessage());
+        }
+        catch(MalformedURLException e){
+            System.out.println("MalformedURLException: " + e.getMessage());
+        }
+        catch(NotBoundException e){
+            System.out.println("NotBoundException: " + e.getMessage());
         }
 
     }
@@ -351,7 +426,8 @@ public class AdminConsole {
         int port = Integer.parseInt(args[0]);
         int backup = Integer.parseInt(args[1]);
         String svName = "SV";
-        String ip = "localhost";
+        //String ip = "localhost";
+        String ip = args[2];
         new AdminConsole(ip, svName, port, backup);
     }
 

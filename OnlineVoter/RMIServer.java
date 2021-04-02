@@ -20,6 +20,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     String db = "data/db.csv";
     String db2 = "data/db2.csv";
     private boolean isPrimary = false;
+    private ArrayList<AdminConsoleInterface> adminConsoles;
 
     private Person getUserByUid(long uid) {
         for (Person p : this.pList) {
@@ -323,10 +324,66 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
     }
 
+    public void subscribe(AdminConsoleInterface adminConsole) throws RemoteException{
+        this.adminConsoles.add(adminConsole);
+        // for(int i = 0; i < 10; i++){
+        //     this.infoForAdminConsoles("teste.");
+        // }
+    }
+
+    //usar quando um voto e recebido -> numero de votos que vieram para aquela eleicao daquela mesa
+    //verificar de onde veio o voto, depois ir somar os votos que foram feitos nessa mesa e adicionar +1 do que acabou de chegar
+    //construir a string e passa-la a este metodo para que seja print nas consolas de administracao
+    private void infoForAdminConsoles(String s) throws RemoteException{
+        for (AdminConsoleInterface ac : this.adminConsoles){
+            try{
+                ac.printOnConsole(s);
+            }
+            catch(RemoteException e){
+                //ocorreu um erro a mandar a string para a console, pode estar offline
+            }
+        }
+    }
+
+    private Election getElectionById(long electionId){
+        for (Election election : this.eList){
+            if (election.getUid() == electionId){
+                return election;
+            }
+        }
+        return null;
+    }
+
+    public String finishedElectionData(long electionId) throws RemoteException{
+        //check if the id corresponds to an election
+        Election election = this.getElectionById(electionId);
+        if (election == null){
+            return "";
+        }
+        //check if the id corresponds to a finished election
+        if (election.getEndTime().before(Calendar.getInstance())){
+            //calculate results
+            String response = "";
+            long totalVoteCount = election.getTotalVoteCount();
+            if (totalVoteCount == 0) totalVoteCount = 1; //para nao dar erro de divisao por zero quando ninguem votou e a eleicao acabou
+            long voteNullCounter = election.getVoteNullCounter();
+            long voteBlankCounter = election.getVoteBlankCounter();
+            long vlVoteCount;
+            for (VotingList vl : election.getLists()){
+                vlVoteCount = vl.getVoteCount();
+                response = response + String.format("%s: %d   %d%%\n", vl.getName(), vlVoteCount, vlVoteCount/totalVoteCount);
+            }
+            response = response + String.format("Blank: %d   %d%%\nNull: %d   %d%%", voteBlankCounter, voteBlankCounter/totalVoteCount, voteNullCounter, voteNullCounter/totalVoteCount);
+            return response;
+        }
+        return "";
+    }
+
     RMIServer(int port, int backup) throws RemoteException {
         super();
         this.port = port;
         this.backUp = backup;
+        this.adminConsoles = new ArrayList<AdminConsoleInterface>();
         loader();
     }
 
@@ -391,6 +448,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             }
         }
         RMIServerInterface sv = new RMIServer(port, backup);
+        // System.setSecurityManager(new SecurityManager());
+        // System.setProperty("java.security.policy","./OnlineVoter/security.policy");
         LocateRegistry.createRegistry(sv.getPort()).rebind("SV", sv);
         System.out.println("Server ready...");
         sv.setIsPrimary(true);

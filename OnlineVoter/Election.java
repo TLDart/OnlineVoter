@@ -121,6 +121,14 @@ public class Election implements Serializable {
         this.voteCountBlank++;
     }
 
+    public long getVoteBlankCounter(){
+        return this.voteCountBlank;
+    }
+
+    public long getVoteNullCounter(){
+        return this.voteCountNull;
+    }
+
     public String toString(){
         String type_str = "";
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");

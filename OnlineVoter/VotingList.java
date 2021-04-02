@@ -29,4 +29,8 @@ public class VotingList implements Serializable {
     public String toString(){
         return String.format("List name: %s | Number of votes: %d", this.name, this.voteCount);
     }
+
+    public long getVoteCount(){
+        return this.voteCount;
+    }
 }
