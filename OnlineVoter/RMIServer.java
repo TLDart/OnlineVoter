@@ -450,6 +450,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         RMIServerInterface sv = new RMIServer(port, backup);
         // System.setSecurityManager(new SecurityManager());
         // System.setProperty("java.security.policy","./OnlineVoter/security.policy");
+        //System.setProperty("java.rmi.server.hostname", "10.211.55.4");
+        //System.setProperty("java.rmi.activation.port", String.format("%d", port));
         LocateRegistry.createRegistry(sv.getPort()).rebind("SV", sv);
         System.out.println("Server ready...");
         sv.setIsPrimary(true);

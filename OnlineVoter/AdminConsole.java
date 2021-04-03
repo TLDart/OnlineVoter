@@ -1,11 +1,13 @@
 package OnlineVoter;
 import java.rmi.*;
+import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.net.MalformedURLException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.rmi.registry.Registry;
 
 public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInterface{
     private RMIServerInterface rmiSv;
@@ -355,6 +357,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             }
             catch(IOException e){
                 System.out.println("IOException: " + e.getMessage());
+            }catch(NumberFormatException e){
+                System.out.println("Choose one of the numbers.");
             }
         }
         System.exit(0);
@@ -371,7 +375,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 this.port = this.backup;
                 this.backup = temp;
                 try{
-                    this.rmiSv = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s",ip,port,svName));
+                    //this.rmiSv = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s",ip,port,svName));
+                    Registry reg = LocateRegistry.getRegistry(this.ip, this.port);
+                    this.rmiSv = (RMIServerInterface) reg.lookup("SV");
                     this.rmiSv.heartbeat();
                 }
                 catch(Exception f){
@@ -401,7 +407,12 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             // System.out.println("here1");
             // System.setSecurityManager(new SecurityManager());
             // System.setProperty("java.security.policy","file:./OnlineVoter/security.policy");
-            this.rmiSv = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s",ip,port,svName));
+            
+            
+            //this.rmiSv = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s",ip,port,svName));
+            Registry reg = LocateRegistry.getRegistry(this.ip, this.port);
+            this.rmiSv = (RMIServerInterface) reg.lookup("SV");
+            
             //System.out.println("here2");
             this.rmiSv.test("Sending MSg");
             //this.regPerson();
@@ -414,9 +425,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         catch(RemoteException e){
             System.out.println("RemoteException: " + e.getMessage());
         }
-        catch(MalformedURLException e){
-            System.out.println("MalformedURLException: " + e.getMessage());
-        }
+        // catch(MalformedURLException e){
+        //     System.out.println("MalformedURLException: " + e.getMessage());
+        // }
         catch(NotBoundException e){
             System.out.println("NotBoundException: " + e.getMessage());
         }
