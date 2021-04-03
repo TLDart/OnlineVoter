@@ -224,8 +224,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     return false;
                 }
             }
-            CopyOnWriteArrayList<String> validDeps = new CopyOnWriteArrayList<>();
-            validDeps.add(department);
+            CopyOnWriteArrayList<VotingListInfo> validDeps = new CopyOnWriteArrayList<>();
+
             if (option == 0) response = this.rmiSv.createElection(startTime, endTime, description, title, department, type, validDeps);
             else if (option == 1) response = this.rmiSv.updateElection(uid, startTime, endTime, description, title, department);
             else response = "Wrong option.";
@@ -337,13 +337,36 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
     }
 
+    private void updateTable(int mode){
+        try{
+            //obter o uid da eleicao
+            System.out.println("Insert the election's id.");
+            long electionId = Long.parseLong(this.reader.readLine());
+            
+            //obter o nome da mesa (departamento)
+            System.out.println("Insert the table's name (department).");
+            String tableDepartment = this.reader.readLine();
+
+            this.rmiSv.updateTables(tableDepartment, electionId, mode);
+        }
+        catch(RemoteException e){
+            System.out.println("RemoteException: " + e.getMessage());
+        }
+        catch(NumberFormatException e){
+            System.out.println("NumberFormatException: " + e.getMessage());
+        }
+        catch(IOException e){
+            System.out.println("IOException: " + e.getMessage());
+        }
+    }
+
     private void menu(){
         boolean stop = false;
         int option;
         while(!stop){
             try{
                 System.out.println("---------------------------------------------");
-                System.out.println("Choose an option:\n1 - Register user\n2 - Create election\n3 - Create a voting list\n4 - Show users from a department and a certain type\n5 - Show elections from a department and a certain type\n6 - Update election\n7 - Show finished election's data.\n8 - Show real time data.\n0 - exit");
+                System.out.println("Choose an option:\n1 - Register user\n2 - Create election\n3 - Create a voting list\n4 - Show users from a department and a certain type\n5 - Show elections from a department and a certain type\n6 - Update election\n7 - Show finished election's data.\n8 - Show real time data.\n9 - Add a table to an election.\n10 - Remove a table from an election.\n0 - exit");
                 option = Integer.parseInt(this.reader.readLine());
                 if (option == 1) this.regPerson();
                 else if (option == 2) this.regElection(0);
@@ -353,6 +376,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 else if (option == 6) this.regElection(1);
                 else if (option == 7) this.showFinishedEletcionData();
                 else if (option == 8) this.realTimeData();
+                else if (option == 9) this.updateTable(0);
+                else if (option == 10) this.updateTable(1);
                 else if (option == 0) stop = true;
             }
             catch(IOException e){

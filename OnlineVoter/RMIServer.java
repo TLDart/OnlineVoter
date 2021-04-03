@@ -145,7 +145,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     }
 
     public String createElection(Calendar startTime, Calendar endTime, String description, String title,
-            String department, int type, CopyOnWriteArrayList<String> validDeps) {
+            String department, int type, CopyOnWriteArrayList<VotingListInfo> validDeps) {
         String response = "";
         Election e;
         // verify if there is other election with the same name at the same time in the
@@ -321,7 +321,14 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             saveObjectFile(db2, eList);
             saveObjectFile(db, pList);
         }
-
+        //obter a eleicao onde o voto ocorreu
+        Election election = this.getElectionById(tInfo.getV().getElectionUid());
+        String response = String.format("%d - %s\n", election.getUid(), election.getTitle());
+        for (VotingListInfo vt : election.getVotingTables()){
+            response = response + String.format("%s: %d\n", vt.getName(), vt.getVoteCount());
+        }
+        //mandar a info da eleicao a que este voto pertence para as consolas de administracao (votos por mesa)
+        this.infoForAdminConsoles(response);
     }
 
     public void subscribe(AdminConsoleInterface adminConsole) throws RemoteException{
@@ -379,6 +386,23 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return "";
     }
 
+
+    public String updateTables(String tableDepartment, long electionId, int mode) throws RemoteException{
+        //verificar se a eleicao existe
+        Election election = this.getElectionById(electionId);
+        if (election == null) return "The election Id given doesn't exist.";
+        if (election.getStartTime().before(Calendar.getInstance())) return "Election already started, can't update tables.";
+
+        //verificar o mode em que estamos -> 0 (adicionar mesa), 1 (remover mesa)
+        if (mode == 0){
+            election.addVotingTable(tableDepartment);
+        }
+        else if (mode == 1){
+            election.remVotingTable(tableDepartment);
+        }
+        return "";
+    }
+
     RMIServer(int port, int backup) throws RemoteException {
         super();
         this.port = port;
@@ -388,8 +412,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     }
 
     private boolean inVotingTables(Election e, String curDepName) {
-        for (String s : e.getVotingTables()) {
-            if (s.equals(curDepName)) {
+        for (VotingListInfo s : e.getVotingTables()) {
+            if (s.getName().equals(curDepName)) {
                 return true;
             }
         }

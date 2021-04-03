@@ -14,13 +14,13 @@ public class Election implements Serializable {
     private CopyOnWriteArrayList<VotingList> lists;
     private String department;
     private int type;
-    private CopyOnWriteArrayList<String> tables;
+    private CopyOnWriteArrayList<VotingListInfo> tables;
     private long voteCountNull;
     private long voteCountBlank; 
 
    
 
-    Election(Calendar startTime, Calendar endTime, String description, String title, String department, CopyOnWriteArrayList<VotingList> lists, int type, CopyOnWriteArrayList<String> validDeps){
+    Election(Calendar startTime, Calendar endTime, String description, String title, String department, CopyOnWriteArrayList<VotingList> lists, int type, CopyOnWriteArrayList<VotingListInfo> validDeps){
         super();
         this.startTime = startTime;
         this.endTime = endTime;
@@ -107,11 +107,11 @@ public class Election implements Serializable {
         this.type = type;
     }
 
-    public CopyOnWriteArrayList<String> getVotingTables(){
+    public CopyOnWriteArrayList<VotingListInfo> getVotingTables(){
         return this.tables;
     }
 
-    public void setVotingTables(CopyOnWriteArrayList<String> tables ){
+    public void setVotingTables(CopyOnWriteArrayList<VotingListInfo> tables){
         this.tables = tables;
     }
     public void addNull(){
@@ -127,6 +127,26 @@ public class Election implements Serializable {
 
     public long getVoteNullCounter(){
         return this.voteCountNull;
+    }
+
+    public void addVotingTable(String tableDepartment){
+        for (VotingListInfo vt : this.tables){
+            //se ja existir nao faz nada
+            if (vt.getName().equals(tableDepartment)){
+                return;
+            }
+        }
+        //se nao existir, adicionar
+        this.tables.add(new VotingListInfo(tableDepartment));
+    }
+
+    public void remVotingTable(String tableDepartment){
+        for (VotingListInfo vt : this.tables){
+            //se existir, remove
+            if(vt.getName().equals(tableDepartment)){
+                this.tables.remove(vt);
+            }
+        }
     }
 
     public String toString(){

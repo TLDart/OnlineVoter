@@ -24,5 +24,9 @@ public class Vote implements Serializable{
         return this.listName;
     }
 
+    public String getVotingTable(){
+        return this.votingTable;
+    }
+
     
 }
