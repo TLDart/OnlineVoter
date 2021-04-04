@@ -4,7 +4,7 @@ import java.util.*;
 
 
 /**
- * Auxilary Structure used in the voting table to manage terminal interaction
+ * Auxilary class used in the voting table to manage terminal interaction
  * 
  * @see VotingTable
  * 
@@ -79,7 +79,7 @@ public class TerminalInfo implements Serializable {
     }
 
      /**
-      * 
+      * Instantiates the terminal Info Struct
       * @param tNr NUmber of the terminal
       * @param e Arraylist contain the Eligible Elections
       * @param p Person associated with the terminal

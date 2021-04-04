@@ -7,7 +7,7 @@ package OnlineVoter;
  * @author Duarte Dias
  * @author Gabriel Fernandes 
  */
-class VotingListInfo{ //Voting Table info??
+public class VotingListInfo{ //Voting Table info??
     private String name;
     private long voteCount;
 

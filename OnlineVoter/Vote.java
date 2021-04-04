@@ -3,7 +3,7 @@ import java.io.Serializable;
 import java.util.Calendar;
 
 /**
- * Defines a The notion of Person to the System. This person has the following attributes:
+ * Defines the notion of Person to the System. This person has the following attributes:
  * <ol>
  *      <li> Voting Table </li>
  *      <li> List Name </li>

@@ -126,15 +126,14 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     }
 
     
-    /** 
+   /*  /** 
      * @param e Election Object
      * @return boolean true if creation was successful
      * @throws RemoteException
-     */
     public boolean createElection(Election e) throws RemoteException {
         e.setUid(++lastElectionUid);
         return eList.add(e);
-    }
+    } */
 
     
     
@@ -510,10 +509,11 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
     
     /** 
-     * @param tableDepartment
-     * @param electionId
-     * @param mode
-     * @return String
+     * Updates the list eligible tables for an election
+     * @param tableDepartment Table to be added/ removed
+     * @param electionId Id of the election to which the change is going to occur
+     * @param mode 0 if addition, 1 if removal
+     * @return String debug response sent to the terminal
      * @throws RemoteException
      */
     public String updateTables(String tableDepartment, long electionId, int mode) throws RemoteException {

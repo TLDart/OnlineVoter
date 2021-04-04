@@ -3,7 +3,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.io.Serializable;
 
 /**
- * Defines a The notion of VotingList to the System. This person has the following attributes:
+ * Defines the notion of VotingList to the System. This person has the following attributes:
  * <ol>
  *      <li> Name </li>
  *      <li> Members </li>

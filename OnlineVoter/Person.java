@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 /**
- * Defines a The notion of Person to the System. This person has the following attributes:
+ * Defines the notion of Person to the System. This person has the following attributes:
  * <ol>
  *      <li> Name </li>
  *      <li> Password </li>

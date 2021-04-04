@@ -9,6 +9,12 @@ import java.util.Calendar;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.rmi.registry.Registry;
 
+
+/** Manager interface for the RMIServer
+ * 
+ * @author Duarte Dias
+ * @author Gabriel Fernandes
+ */
 public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInterface{
     private RMIServerInterface rmiSv;
     private InputStreamReader input;
@@ -19,6 +25,10 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
     private int backup;
     private boolean showRealTimeData;
 
+    /**
+     * Register a user into the database
+     * @return True if registered false if not
+     */
     public  boolean regPerson(){
         //ler da consola
         String name, password, dep, address;
@@ -79,6 +89,10 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         return true;
     }
 
+    /**
+     * Registers a voting list
+     * @return true if registered successfully, false if  ont
+     */
     public boolean regVotingList(){        
         long electionId;
         String name, response;
@@ -126,6 +140,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
     }
 
+    
+    /** 
+     * @param option 1 if update, 0 if new election
+     * @return boolean true if created/updated, false if not
+     */
     public boolean regElection(int option){//if option = 0 -> create election, option = 1 -> update election
         Calendar startTime = Calendar.getInstance(), endTime = Calendar.getInstance();
         String title, description, department, response, aux;
@@ -244,6 +263,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
     }
 
+    /**
+     * Show users
+     */
     private void showUsers(){
         String department;
         int type;
@@ -271,6 +293,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
     }
 
+    /**
+     * Show Elections
+     */
     private void showElections(){
         String department;
         int type;
@@ -300,7 +325,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             System.out.println("NumberFormatException: " + e.getMessage());
         }
     }
-
+    /**
+     * Show RealTime Data
+     */
     private void realTimeData(){
         //mostrar real time data
         this.showRealTimeData = true;
@@ -337,6 +364,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
     }
 
+    
+    /** 
+     * @param mode 0 if addition, 1 if removal
+     * @see RMIServer#updateTables(String, long, int)
+     */
     private void updateTable(int mode){
         try{
             //obter o uid da eleicao
@@ -359,7 +391,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             System.out.println("IOException: " + e.getMessage());
         }
     }
-
+    /**
+     * Displays the menu for the user to select and option
+     */
     private void menu(){
         boolean stop = false;
         int option;
@@ -388,7 +422,11 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
         System.exit(0);
     }
-
+/**
+     * Server selector tool
+     * <p> Logic : Try to connect to the main Server, if that fails, try to connect to the second one if that fails, wait 1 second
+     * @return Returns an instance of a Remote object 
+     */
     private void selectServer(){
         int temp;
         do{
@@ -413,12 +451,26 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }while(this.rmiSv == null);
     }
 
+    
+    /** 
+     * Prints remote data on Admin Console
+     * @param s String to be Printed
+     * @throws RemoteException if connection cannot be established
+     */
     public void printOnConsole(String s) throws RemoteException{
         if(this.showRealTimeData){
             System.out.println(s);
         }
     }
 
+        /**
+         *  Class constructor for admin console
+         * @param ip Ip of the multicast server
+         * @param svName Name of the server
+         * @param port Port of the server
+         * @param backup Backup Port of the server
+         * @throws RemoteException if connection cannot be made
+         */
     AdminConsole(String ip, String svName, int port, int backup) throws RemoteException{
         this.ip =  ip;
         this.svName = svName;
@@ -458,6 +510,13 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         }
 
     }
+    
+    /** 
+     * @param args Terminal arguments
+     * @throws MalformedURLException if URL is wrong
+     * @throws RemoteException if connection cannot be made
+     * @throws NotBoundException  if an attempt is made to lookup or unbind in the registry a name that has no associated binding.
+     */
     public static void main(String[] args) throws MalformedURLException, RemoteException, NotBoundException{
         int port = Integer.parseInt(args[0]);
         int backup = Integer.parseInt(args[1]);
