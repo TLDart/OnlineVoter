@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 public interface RMIServerInterface extends Remote {
     public boolean registerUser(Person p) throws RemoteException;
-    public boolean createElection(Election c) throws RemoteException;
     public int getPort() throws RemoteException;
     public Election searchElectionById(long uid) throws RemoteException;
     public String createVotingList(long electionId, String name, int type, CopyOnWriteArrayList<String> members) throws RemoteException;

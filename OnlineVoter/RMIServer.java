@@ -428,7 +428,9 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      * @throws RemoteException if connection fails
      */
     public void subscribe(AdminConsoleInterface adminConsole) throws RemoteException {
-        this.adminConsoles.add(adminConsole);
+        if(!this.adminConsoles.contains(adminConsole)){
+            this.adminConsoles.add(adminConsole);
+        }
         // for(int i = 0; i < 10; i++){
         // this.infoForAdminConsoles("teste.");
         // }
