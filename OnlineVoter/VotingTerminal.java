@@ -49,7 +49,7 @@ public class VotingTerminal{
         //this.portForDiscovery = Integer.parseInt(args[3]);
         this.portForVoting = Integer.parseInt(args[4]);
         this.timeInterval = 120;
-        this.nMessagesTimeout = Integer.parseInt(args[5]);
+        //this.nMessagesTimeout = Integer.parseInt(args[5]);
         this.timeoutTime = Integer.parseInt(args[6]);
 
         //ler inputs do user
@@ -59,7 +59,7 @@ public class VotingTerminal{
         //thread reponsavel pelo handle das mensagens de discovery do terminal de voto
         //this.discoverThread = new DiscoveryThread(this.numeroTerminal, this.ipForDiscovery, this.portForDiscovery);
         this.discoverThread = discoveryThread;
-
+        this.nMessagesTimeout = 10;
         //ligar ao socket para as mensagens de voto
         this.socket = null;
         this.group = null;

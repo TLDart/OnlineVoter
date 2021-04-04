@@ -1,4 +1,5 @@
 package OnlineVoter;
+
 import java.util.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -6,6 +7,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.io.*;
 import java.rmi.*;
 import java.util.concurrent.TimeUnit;
+
+import javax.print.attribute.standard.NumberOfInterveningJobs;
+
 import java.util.concurrent.FutureTask;
 import java.net.MulticastSocket;
 import java.net.SocketException;
@@ -15,8 +19,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * The RequestHandler Class is an helper class to the Voting Table, used to manage a secondary Thread.
- * This class Handles Voting Terminal Messaging
+ * The RequestHandler Class is an helper class to the Voting Table, used to
+ * manage a secondary Thread. This class Handles Voting Terminal Messaging
  * 
  * @see RequestHandler#run()
  * 
@@ -37,24 +41,27 @@ class RequestHandler extends Thread {
     private InputStreamReader input;
     private BufferedReader reader;
     private RMIServerInterface rmiSV;
+
     /**
      * Class Constructor for the Voting Table Thread
-     * @param ip The Ip of the voting table
-     * @param port The port of the voting table
-     * @param svIP The Ip of the RMI Server
-     * @param svPort The Port of the RMI Server
-     * @param backupIP The Ip of the backup RMI Server
-     * @param backupPort The Port of the backup RMI Server
-     * @param svName The name of the RMI Server
-     * @param nTerminals The number of terminals that are instantiated
-     * @param tInfo A structure that hold information about the Terminals
-     * @param name The name of the voting table
-     * @param timeoutTime The timeout Time of the RMI server (In case of failed connection)
+     * 
+     * @param ip          The Ip of the voting table
+     * @param port        The port of the voting table
+     * @param svIP        The Ip of the RMI Server
+     * @param svPort      The Port of the RMI Server
+     * @param backupIP    The Ip of the backup RMI Server
+     * @param backupPort  The Port of the backup RMI Server
+     * @param svName      The name of the RMI Server
+     * @param nTerminals  The number of terminals that are instantiated
+     * @param tInfo       A structure that hold information about the Terminals
+     * @param name        The name of the voting table
+     * @param timeoutTime The timeout Time of the RMI server (In case of failed
+     *                    connection)
      * @see RMIServer
      * @see VotingTerminal
      */
-    RequestHandler(String ip, int port, String svIP, int svPort, String backupIP,int backupPort, String svName, int nTerminals, CopyOnWriteArrayList<TerminalInfo> tInfo,
-            String name, long timeoutTime) {
+    RequestHandler(String ip, int port, String svIP, int svPort, String backupIP, int backupPort, String svName,
+            int nTerminals, CopyOnWriteArrayList<TerminalInfo> tInfo, String name, long timeoutTime) {
         this.ip = ip;
         this.port = port;
         this.svIP = svIP;
@@ -70,7 +77,9 @@ class RequestHandler extends Thread {
     }
 
     /**
-     * Bridges a connection with RMI serves, works as Wrapper for the selectServerTool Specifying a Timeout Time
+     * Bridges a connection with RMI serves, works as Wrapper for the
+     * selectServerTool Specifying a Timeout Time
+     * 
      * @param timeoutTime Time until the Connection Fails and execution is ended
      */
     private void connectRMI(long timeoutTime) {
@@ -86,17 +95,22 @@ class RequestHandler extends Thread {
             System.exit(1);
         }
     }
+
     /**
      * Server selector tool
-     * <p> Logic : Try to connect to the main Server, if that fails, try to connect to the second one if that fails, wait 1 second
-     * @return Returns an instance of a Remote object 
+     * <p>
+     * Logic : Try to connect to the main Server, if that fails, try to connect to
+     * the second one if that fails, wait 1 second
+     * 
+     * @return Returns an instance of a Remote object
      */
     RMIServerInterface selectServer() {
         RMIServerInterface rmiSv;
         while (true) {
             System.out.println("Loading");
             try {
-                rmiSv = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s", this.svIP, this.svPort, this.svName));
+                rmiSv = (RMIServerInterface) Naming
+                        .lookup(String.format("//%s:%d/%s", this.svIP, this.svPort, this.svName));
                 rmiSv.heartbeat();
                 return rmiSv;
             } catch (Exception e) {
@@ -104,7 +118,8 @@ class RequestHandler extends Thread {
                 // server" + e.getMessage());
             }
             try {
-                rmiSv = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s", this.backupIP, this.backupPort, this.svName));
+                rmiSv = (RMIServerInterface) Naming
+                        .lookup(String.format("//%s:%d/%s", this.backupIP, this.backupPort, this.svName));
                 rmiSv.heartbeat();
                 return rmiSv;
             } catch (Exception e) {
@@ -119,12 +134,14 @@ class RequestHandler extends Thread {
             }
         }
     }
+
     /**
-     * Runs the Main Thread
-     * In this thread, this thread works as a Request-Response Handler
+     * Runs the Main Thread In this thread, this thread works as a Request-Response
+     * Handler
      * <ol>
-     *      <li> If the the VotingTerminal asks for authentication, the thread verfies the CC and Password Provided
-     *      <li> Processes the Vote ensuring that no vote is lost, nor it is duplicated
+     * <li>If the the VotingTerminal asks for authentication, the thread verfies the
+     * CC and Password Provided
+     * <li>Processes the Vote ensuring that no vote is lost, nor it is duplicated
      */
     public void run() {
         MulticastSocket socket = null;
@@ -248,16 +265,18 @@ class RequestHandler extends Thread {
     }
 
 }
-    /**
-     * The class voting tables start the execution of the program by starting 2 threads, a Discovery Thread and a Message Handling Thread.
-     * The Discovery Thread handles users and Voting Terminals
-     * The Handling Threads manages votes and Terminal Multicast Messaging
-     * 
-     * @see VotingTable#run()
-     * 
-     * @author Duarte Dias
-     * @author Gabriel Fernandes
-     */
+
+/**
+ * The class voting tables start the execution of the program by starting 2
+ * threads, a Discovery Thread and a Message Handling Thread. The Discovery
+ * Thread handles users and Voting Terminals The Handling Threads manages votes
+ * and Terminal Multicast Messaging
+ * 
+ * @see VotingTable#run()
+ * 
+ * @author Duarte Dias
+ * @author Gabriel Fernandes
+ */
 public class VotingTable extends Thread {
     private String ip;
     private int port;
@@ -272,8 +291,11 @@ public class VotingTable extends Thread {
     private InputStreamReader input;
     private BufferedReader reader;
     private RMIServerInterface rmiSV;
+
     /**
-     * Bridges a connection with RMI serves, works as Wrapper for the selectServerTool Specifying a Timeout Time
+     * Bridges a connection with RMI serves, works as Wrapper for the
+     * selectServerTool Specifying a Timeout Time
+     * 
      * @param timeoutTime Time until the Connection Fails and execution is ended
      */
     private void connectRMI(long timeoutTime) {
@@ -289,17 +311,22 @@ public class VotingTable extends Thread {
             System.exit(1);
         }
     }
+
     /**
      * Server selector tool
-     * <p> Logic : Try to connect to the main Server, if that fails, try to connect to the second one if that fails, wait 1 second
-     * @return Returns an instance of a Remote object 
+     * <p>
+     * Logic : Try to connect to the main Server, if that fails, try to connect to
+     * the second one if that fails, wait 1 second
+     * 
+     * @return Returns an instance of a Remote object
      */
     RMIServerInterface selectServer() {
         RMIServerInterface rmiSv;
         while (true) {
             System.out.println("Loading");
             try {
-                rmiSv = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s", this.svIP, this.svPort, this.svName));
+                rmiSv = (RMIServerInterface) Naming
+                        .lookup(String.format("//%s:%d/%s", this.svIP, this.svPort, this.svName));
                 rmiSv.heartbeat();
                 return rmiSv;
             } catch (Exception e) {
@@ -307,7 +334,8 @@ public class VotingTable extends Thread {
                 // server" + e.getMessage());
             }
             try {
-                rmiSv = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s", this.backupIP, this.backupPort, this.svName));
+                rmiSv = (RMIServerInterface) Naming
+                        .lookup(String.format("//%s:%d/%s", this.backupIP, this.backupPort, this.svName));
                 rmiSv.heartbeat();
                 return rmiSv;
             } catch (Exception e) {
@@ -325,6 +353,7 @@ public class VotingTable extends Thread {
 
     /**
      * Simple String parser
+     * 
      * @param s String to be parsed
      * @return Parsed word list
      */
@@ -339,14 +368,15 @@ public class VotingTable extends Thread {
         }
         return all;
     }
+
     /**
-     * Runs the Main Thread
-     * In this thread:
+     * Runs the Main Thread In this thread:
      * <ol>
-     *      <li> If there is a person at the voting table, ask for CC
-     *      <li> If the CC is valid and there is a Running election, ask the user which election they want to vote
-     *      <li> Probes the Voting Terminals for a free Terminal
-     *      <li> Links the User, Election and Voting Terminal
+     * <li>If there is a person at the voting table, ask for CC
+     * <li>If the CC is valid and there is a Running election, ask the user which
+     * election they want to vote
+     * <li>Probes the Voting Terminals for a free Terminal
+     * <li>Links the User, Election and Voting Terminal
      */
     public void run() {
         final String availabilityMessage = "id|*;type|availability";
@@ -370,6 +400,8 @@ public class VotingTable extends Thread {
                 cc = Integer.parseInt(this.reader.readLine());
             } catch (IOException e) {
                 System.out.println("There was an error");
+            }catch(NumberFormatException e){
+                System.out.println("Please insert a number");
             }
 
             // Get the info from the RMI
@@ -416,7 +448,7 @@ public class VotingTable extends Thread {
                         wordlist = splitStr(responseMessage);
 
                         // Parse the availabitilty message
-                        for(String s : wordlist){
+                        for (String s : wordlist) {
                             System.out.println(s);
                         }
                         if (wordlist.get(0).equals("id") && !wordlist.get(1).equals("*")
@@ -453,24 +485,27 @@ public class VotingTable extends Thread {
 
         }
     }
+
     /**
      * Class Constructor for the Voting Table Thread
-     * @param ip The Ip of the voting table
-     * @param port The port of the voting table
-     * @param svIP The Ip of the RMI Server
-     * @param svPort The Port of the RMI Server
-     * @param backupIP The Ip of the backup RMI Server
-     * @param backupPort The Port of the backup RMI Server
-     * @param svName The name of the RMI Server
-     * @param nTerminals The number of terminals that are instantiated
-     * @param tInfo A structure that hold information about the Terminals
-     * @param name The name of the voting table
-     * @param timeoutTime The timeout Time of the RMI server (In case of failed connection)
+     * 
+     * @param ip          The Ip of the voting table
+     * @param port        The port of the voting table
+     * @param svIP        The Ip of the RMI Server
+     * @param svPort      The Port of the RMI Server
+     * @param backupIP    The Ip of the backup RMI Server
+     * @param backupPort  The Port of the backup RMI Server
+     * @param svName      The name of the RMI Server
+     * @param nTerminals  The number of terminals that are instantiated
+     * @param tInfo       A structure that hold information about the Terminals
+     * @param name        The name of the voting table
+     * @param timeoutTime The timeout Time of the RMI server (In case of failed
+     *                    connection)
      * @see RMIServer
      * @see VotingTerminal
      */
-    VotingTable(String ip, int port, String svIP, int svPort, String backupIP,int backupPort, String svName, int nTerminals, CopyOnWriteArrayList<TerminalInfo> tInfo,
-            String name, long timeoutTime) {
+    VotingTable(String ip, int port, String svIP, int svPort, String backupIP, int backupPort, String svName,
+            int nTerminals, CopyOnWriteArrayList<TerminalInfo> tInfo, String name, long timeoutTime) {
         this.ip = ip;
         this.port = port;
         this.svIP = svIP;
@@ -484,50 +519,50 @@ public class VotingTable extends Thread {
         this.reader = new BufferedReader(input);
         this.timeoutTime = timeoutTime;
     }
+
     /**
      * Initializes the Voting Table (2 Threads)
+     * 
      * @param args Command line arguments that specify
-     * <ul>
-     *      <li> IP </li>
-     *      <li> port </li>
-     *      <li> svIP </li>
-     *      <li> svPort </li>
-     *      <li> backupIP</li> 
-     *      <li> backupPort </li>
-     *      <li> svName </li>
-     *      <li> nTerminals </li>
-     *      <li> tInfo </li>
-     *      <li> name </li>
-     *      <li> timeoutTime </li>
-     * </ul>
+     *             <ul>
+     *             <li>IP</li>
+     *             <li>port</li>
+     *             <li>svIP</li>
+     *             <li>svPort</li>
+     *             <li>backupIP</li>
+     *             <li>backupPort</li>
+     *             <li>svName</li>
+     *             <li>nTerminals</li>
+     *             <li>tInfo</li>
+     *             <li>name</li>
+     *             <li>timeoutTime</li>
+     *             </ul>
      * 
      */
     public static void main(String args[]) {
-        /*
-         * String ip = args[0]; int port = Integer.parseInt((args[1])); long sleep_time
-         * = Integer.parseInt((args[2])); int svPort = Integer.parseInt((args[3])); int
-         * BackupIP = Integer.parseInt((args[4])); int nTerminais =
-         * Integer.parseInt((args[5]));
-         */
 
-        String ip = "224.3.2.1";
-        int port = 4321;
-        String svIP = "localhost";
-        int svPort = 3099;
-        String backupIP = "localhost";
-        int BackupIP = 4099;
-        String svName = "SV";
-        int nTerminais = 2;
-        String name = "DEI";
-        long timeoutTime = 5;
+        String multicastIP = args[0];
+        int discoveryPort = Integer.parseInt((args[1]));
+        int requestPort = Integer.parseInt((args[2]));
+        String svIP = args[3];
+        int svPort = Integer.parseInt((args[4]));
+        String backupIP = args[5];
+        int backupPort = Integer.parseInt((args[6]));
+        String svName = args[7];
+        int nTerminals = Integer.parseInt((args[8]));
+        String name = args[9];
+        int timeoutTime = Integer.parseInt((args[10]));
+
 
         CopyOnWriteArrayList<TerminalInfo> tInfo = new CopyOnWriteArrayList<>();
-        for (int i = 0; i < nTerminais + 1; i++) {
+        for (int i = 0; i < nTerminals + 1; i++) {
             tInfo.add(new TerminalInfo(i));
         }
 
-        RequestHandler r = new RequestHandler(ip, 43210,svIP, svPort,backupIP, BackupIP,svName, nTerminais, tInfo, name, timeoutTime);
-        VotingTable v = new VotingTable(ip, port,svIP, svPort,backupIP, BackupIP,svName, nTerminais, tInfo, name, timeoutTime);
+        RequestHandler r = new RequestHandler(multicastIP, requestPort, svIP, svPort, backupIP, backupPort, svName, nTerminals,
+                tInfo, name, timeoutTime);
+        VotingTable v = new VotingTable(multicastIP, discoveryPort, svIP, svPort, backupIP, backupPort, svName, nTerminals, tInfo,
+                name, timeoutTime);
 
         v.start();
         r.start();

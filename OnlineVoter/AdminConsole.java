@@ -36,7 +36,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
      * 
      * @param timeoutTime Time until the Connection Fails and execution is ended
      */
-    private void connectRMI(long timeoutTime, AdminConsole adm){
+    private void connectRMI(long timeoutTime, AdminConsole adm) {
         try {
             FutureTask<RMIServerInterface> task = new FutureTask<RMIServerInterface>(() -> {
                 return selectServer();
@@ -63,6 +63,8 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         RMIServerInterface rmiSv;
         while (true) {
             System.out.println("Loading");
+            System.out.println(String.format("//%s:%d/%s", this.svIP, this.svPort, this.svName));
+            System.out.println(String.format("//%s:%d/%s", this.backupIP, this.svPort, this.svName));
             try {
                 rmiSv = (RMIServerInterface) Naming
                         .lookup(String.format("//%s:%d/%s", this.svIP, this.svPort, this.svName));
@@ -548,10 +550,9 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
 
         this.input = new InputStreamReader(System.in);
         this.reader = new BufferedReader(input);
-        
+
         connectRMI(this.timeoutTime, this);
         this.menu();
-
 
     }
 

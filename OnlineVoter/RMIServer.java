@@ -597,14 +597,18 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      * @throws RemoteException When There is a failure in the connection
      */
     public static void main(String[] args) throws RemoteException {
-        int port = Integer.parseInt(args[0]);
-        int backup = Integer.parseInt(args[1]);
+        String svIP = args[0];
+        int svPort = Integer.parseInt(args[1]);
+        String backupIP = args[2];
+        int backupPort = Integer.parseInt(args[3]);
+        String svName = args[4];
         int counter = 0;
         RMIServerInterface svBack = null;
         while (counter < 5) {
+               //System.out.println(String.format("//%s:%d/%s", "localhost", backup, "SV"));
+               System.out.println(String.format("//%s:%d/%s", backupIP, backupPort, svName));
             try {
-                svBack = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s", "localhost", backup, "SV"));
-                System.out.println(String.format("//%s:%d/%s", "localhost", backup, "SV"));
+                svBack = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s", backupIP, backupPort, svName));
                 counter = 10;
             } catch (Exception e) {
                 counter++;
@@ -634,12 +638,15 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 return;
             }
         }
-        RMIServerInterface sv = new RMIServer(port, backup);
+
+        RMIServerInterface sv = new RMIServer(svPort, backupPort);
         // System.setSecurityManager(new SecurityManager());
         // System.setProperty("java.security.policy","./OnlineVoter/security.policy");
         // System.setProperty("java.rmi.server.hostname", "10.211.55.4");
         // System.setProperty("java.rmi.activation.port", String.format("%d", port));
-        LocateRegistry.createRegistry(sv.getPort()).rebind("SV", sv);
+        LocateRegistry.createRegistry(sv.getPort()).rebind(svName, sv);
+        System.out.println(svName);
+        System.out.println(svPort);
         System.out.println("Server ready...");
         sv.setIsPrimary(true);
         System.out.println("Changed to primary");
