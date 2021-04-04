@@ -1,6 +1,16 @@
 package OnlineVoter;
 import java.io.Serializable;
 import java.util.*;
+
+
+/**
+ * Auxilary Structure used in the voting table to manage terminal interaction
+ * 
+ * @see VotingTable
+ * 
+ * @author Duarte Dias
+ * @author Gabriel Fernandes 
+ */
 public class TerminalInfo implements Serializable {
     private Person p;
     public ArrayList<Election> validElections;
@@ -67,6 +77,13 @@ public class TerminalInfo implements Serializable {
         this.p = null;
 
     }
+
+     /**
+      * 
+      * @param tNr NUmber of the terminal
+      * @param e Arraylist contain the Eligible Elections
+      * @param p Person associated with the terminal
+      */
     TerminalInfo(int tNr, ArrayList<Election> e, Person p){
         this.tNr = tNr;
         this.v = null;

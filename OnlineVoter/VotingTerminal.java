@@ -12,6 +12,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+
+ /** Defines the caracteristics of the VotingTerminal
+ * 
+ * @author Duarte Dias
+ * @author Gabriel Fernandes
+ */
 public class VotingTerminal{
     private String numeroTerminal;
     private String ipForVoting;
@@ -31,7 +37,11 @@ public class VotingTerminal{
     private MulticastSocket socket;
     private InetAddress group;
 
-
+     /**
+      *  Instantiates the Voting Terminal
+      * @param args Terminal arguments that include, terminal number, ip, port, timeInterval, Message Timeoout and TimeoutTime
+      * @param discoveryThread Copy of the discovery Thread
+      */
     public VotingTerminal(String [] args, DiscoveryThread discoveryThread){
         this.numeroTerminal = args[0];
         //this.ipForDiscovery = args[1];
@@ -64,6 +74,12 @@ public class VotingTerminal{
             System.exit(0);
         }
     }
+
+     /**
+      * Instantias both Threads
+      * @param args Arguments passed by the terminal (check Voting terminal Constructor)
+      * @see VotingTerminal#VotingTerminal(String[], DiscoveryThread)
+      */
     public static void main(String args[]){
         DiscoveryThread discoverThread = new DiscoveryThread(args[0], args[1], Integer.parseInt(args[3]));
         VotingTerminal vt = new VotingTerminal(args, discoverThread);
@@ -76,6 +92,15 @@ public class VotingTerminal{
         }
     }
 
+    /**
+     * Core of the voting Terminal.
+     * <ul>
+     * 
+     * <li> Includes : Authentication with the user </li>
+     * <li> List Display and selection </li>
+     * <li> Vote Casting </li>
+     * </ul>
+     */
     private void process(){
         String message, response;
         byte [] buffer = new byte[1024];
@@ -223,6 +248,11 @@ public class VotingTerminal{
         // this.discoverThread.setFree(!this.discoverThread.getFree());
     }
 
+    
+    /** 
+     * @param s String to be splitted
+     * @return ArrayList<String> Worlist with words according to the rules of messaging established
+     */
     private static ArrayList<String> splitStr(String s){
         String [] pairs = s.split(";");
         ArrayList<String> all = new ArrayList<String>();
@@ -243,6 +273,12 @@ class DiscoveryThread implements Runnable{
     private int portForDiscovery;
     Thread thread;
 
+    /**
+     * 
+     * @param numeroTerminal Number of the terminal
+     * @param ipForDiscovery Ip of the terminal
+     * @param portForDiscovery Port of the terminal
+     */
     public DiscoveryThread(String numeroTerminal, String ipForDiscovery, int portForDiscovery){
         this.numeroTerminal = numeroTerminal;
         this.ipForDiscovery = ipForDiscovery;
@@ -251,7 +287,11 @@ class DiscoveryThread implements Runnable{
         this.free = true;//para inicializar como estando livre
         this.thread.start();
     }
-
+    
+    /**
+     * Runs the Discovery Thread in the Discovery Terminal
+     * This threads main goals is to reply to messages from the Voting Table and linking connection between the discovery thread and the voting terminal thread
+     */
     public void run(){
         MulticastSocket socket = null;
         String message, response;

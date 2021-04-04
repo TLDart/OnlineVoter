@@ -4,6 +4,21 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * The Election class contains all the data related to a certain Election.
+ * This is:
+ * <ol>
+ *      <li> Start Time </li>
+ *      <li> End Time </li>
+ *      <li> Title </li>
+ *      <li> Description </li>
+ *      <li> Departament </li>
+ *      <li> Total Vote count </li>
+ *      <li> Lists to be voted in </li>
+ *      <li> Type of the Election </li>
+ *      <li> StartTime </li>
+ * </ol>
+ */
 public class Election implements Serializable {
     private long uid;
     private Calendar startTime;
@@ -19,7 +34,17 @@ public class Election implements Serializable {
     private long voteCountBlank; 
 
    
-
+    /**
+     * Instantiated the Election Class
+     * @param startTime Start time of the Election
+     * @param endTime End time of the Election
+     * @param description Description of the Election
+     * @param title Title of the ELection
+     * @param department Departament of the Election 
+     * @param lists Lists Present of the election
+     * @param type Type of the Election (Student , Teacher or Janitor)
+     * @param validDeps Valid Departaments to be voted in
+     */
     Election(Calendar startTime, Calendar endTime, String description, String title, String department, CopyOnWriteArrayList<VotingList> lists, int type, CopyOnWriteArrayList<VotingListInfo> validDeps){
         super();
         this.startTime = startTime;
@@ -129,6 +154,11 @@ public class Election implements Serializable {
         return this.voteCountNull;
     }
 
+    
+    /** 
+     * Adds a voting table to the departament
+     * @param tableDepartment table to be added
+     */
     public void addVotingTable(String tableDepartment){
         for (VotingListInfo vt : this.tables){
             //se ja existir nao faz nada
@@ -140,6 +170,11 @@ public class Election implements Serializable {
         this.tables.add(new VotingListInfo(tableDepartment));
     }
 
+    
+    /** 
+     * Removes a Voting lTable from a departament
+     * @param tableDepartment table to be removed
+     */
     public void remVotingTable(String tableDepartment){
         for (VotingListInfo vt : this.tables){
             //se existir, remove
@@ -149,6 +184,11 @@ public class Election implements Serializable {
         }
     }
 
+    
+    /** 
+     * Builds a String with information about the Election
+     * @return String with information about the Election
+     */
     public String toString(){
         String type_str = "";
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm");

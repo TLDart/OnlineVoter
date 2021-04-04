@@ -1,8 +1,20 @@
 package OnlineVoter;
-class VotingListInfo{
+/**
+ * Auxilary class used to manage data from each voting table
+ * 
+ * @see VotingTable
+ * 
+ * @author Duarte Dias
+ * @author Gabriel Fernandes 
+ */
+class VotingListInfo{ //Voting Table info??
     private String name;
     private long voteCount;
 
+     /**
+      * 
+      * @param name Nameof the voting table
+      */
     VotingListInfo(String name){
         this.name = name;
         this.voteCount = 0;

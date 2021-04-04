@@ -1,4 +1,5 @@
 package OnlineVoter;
+
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -10,6 +11,11 @@ import java.io.*;
 import java.rmi.*;
 import java.util.concurrent.*;
 
+/** Defines the caracteristics of the rmiserver
+ * 
+ * @author Duarte Dias
+ * @author Gabriel Fernandes
+ */
 public class RMIServer extends UnicastRemoteObject implements RMIServerInterface {
     private CopyOnWriteArrayList<Person> pList;
     private CopyOnWriteArrayList<Election> eList;
@@ -22,6 +28,11 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     private boolean isPrimary = false;
     private ArrayList<AdminConsoleInterface> adminConsoles;
 
+    
+    /** 
+     * @param uid
+     * @return Person person with corresponding uid or null
+     */
     private Person getUserByUid(long uid) {
         for (Person p : this.pList) {
             if (p.getUid() == uid) {
@@ -31,8 +42,13 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return null;
     }
 
-    // verify if a voting list with a certain name already exists, if so it is
-    // returned
+    
+    /** 
+     * Verifies if a certain Voting list already exists in an Election
+     * @param election Election object
+     * @param vlName name of the voting list
+     * @return VotingList respective voting list or null
+     */
     private VotingList searchVotingList(Election election, String vlName) {
         for (VotingList vl : election.getLists()) {
             if (vlName.equals(vl.getName()))
@@ -41,6 +57,12 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return null;
     }
 
+    
+    /** 
+     * Load objects from file
+     * @param path path of the object file
+     * @return Object Loaded object
+     */
     private Object loadObjectFile(String path) {
         Object obj;
         try {
@@ -56,6 +78,12 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
     }
 
+    
+    /** 
+     * @param path path to saved object
+     * @param object Object to be saved
+     * @return boolean true if saved sucessfully, false if not
+     */
     public static boolean saveObjectFile(String path, Object object) {
         try {
             FileOutputStream objFile = new FileOutputStream(path);
@@ -63,13 +91,17 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             outputStreamObj.writeObject(object);
             outputStreamObj.close();
             objFile.close();
-            System.out.println("secure");
             return true;
         } catch (IOException e) {
             return false;
         }
     }
 
+    
+    /** 
+     * @param uid Election uid
+     * @return Election if found, null if not
+     */
     public Election searchElectionById(long uid) {
         for (Election e : eList) {
             if (e.getUid() == uid) {
@@ -79,6 +111,12 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return null;
     }
 
+    
+    /** 
+     * @param p Person Object to be saved
+     * @return boolean if user registered sucessfully
+     * @throws RemoteException if connection cannot be established
+     */
     public boolean registerUser(Person p) throws RemoteException {
         p.setUid(++lastPersonUid);
         pList.add(p);
@@ -87,27 +125,28 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return true;
     }
 
+    
+    /** 
+     * @param e Election Object
+     * @return boolean true if creation was successful
+     * @throws RemoteException
+     */
     public boolean createElection(Election e) throws RemoteException {
         e.setUid(++lastElectionUid);
         return eList.add(e);
     }
 
-    // public boolean createVotingList(long electionId, String name, int type,
-    // CopyOnWriteArrayList<Long> members_uid){
-    // CopyOnWriteArrayList<Person> members = new CopyOnWriteArrayList<Person>();
-    // Person p;
-    // Election election;
-    // //encontrar as pessoas da lista
-    // for (long uid : members_uid){
-    // p = this.getUserByUid(uid);
-    // if (p != null) members.add(p);
-    // }
-    // //encontar a eleicao
-    // election = this.searchElectionById(electionId);
-    // election.getLists().add(new VotingList(name, type, members));
-
-    // return true;
-    // }
+    
+    
+    
+    
+    /** 
+     * @param electionId uid of the election
+     * @param name Name of the Election
+     * @param type Type of the election
+     * @param members Member the Table
+     * @return String Response according to the status of the creation of the election
+     */
     public String createVotingList(long electionId, String name, int type, CopyOnWriteArrayList<String> members) {
         String response = "";// if empty it was sucessful, otherwise it says what was wrong with the request
         Person p;
@@ -144,6 +183,17 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return response;
     }
 
+    
+    /** 
+     * @param startTime Starttime of  the election
+     * @param endTime End time of the election
+     * @param description Description of the Election
+     * @param title Title of the Election
+     * @param department Departament of the Election
+     * @param type Type of the Election
+     * @param validDeps Valid Departaments of the election
+     * @return String Response in of any errors
+     */
     public String createElection(Calendar startTime, Calendar endTime, String description, String title,
             String department, int type, CopyOnWriteArrayList<VotingListInfo> validDeps) {
         String response = "";
@@ -170,6 +220,16 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return response;
     }
 
+    
+    /** 
+     * @param uid Uid of the election to be changed
+     * @param startTime Starttime of  the election
+     * @param endTime End time of the election
+     * @param description Description of the Election
+     * @param title Title of the Election
+     * @param department Departament of the Election
+     * @return String with status of the election
+     */
     public String updateElection(long uid, Calendar startTime, Calendar endTime, String description, String title,
             String department) {
         String response = "";
@@ -203,6 +263,12 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return response;
     }
 
+    
+    /** 
+     * @param department Departament Name to be searched
+     * @param type type of person to be searched
+     * @return ArrayList<Person> with query of the conditions above
+     */
     // get a list with the people of a certain department of a certain type
     public ArrayList<Person> getListUsers(String department, int type) {
         ArrayList<Person> result = new ArrayList<Person>();
@@ -213,6 +279,12 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return result;
     }
 
+    
+    /** 
+     * @param department Departament Name to be searched
+     * @param type type of person to be searchede
+     * @return ArrayList<Election> with query of the conditions above
+     */
     public ArrayList<Election> getListElections(String department, int type) {
         ArrayList<Election> result = new ArrayList<Election>();
         for (Election e : this.eList) {
@@ -222,10 +294,14 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return result;
     }
 
+    
     public void test(String msg) throws RemoteException {
         System.out.println(msg);
     }
 
+    /**
+     * Calls load Object File to load files into the correct lists
+     */
     private void loader() {
         Object t1 = this.loadObjectFile(db);
         Object t2 = this.loadObjectFile(db2);
@@ -241,10 +317,15 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         } else {
             this.eList = new CopyOnWriteArrayList<>();
         }
-        System.out.println(this.lastElectionUid);
-        System.out.println(this.lastPersonUid);
+        //System.out.println(this.lastElectionUid);
+        //System.out.println(this.lastPersonUid);
     }
 
+    
+    /** 
+     * @param cc CC of the Person
+     * @return Person Person if found , null if not
+     */
     public Person getPersonByCC(int cc) {
         for (Person p : pList) {
             System.out.println(String.format("User %s", p.getName()));
@@ -257,6 +338,13 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return null;
     }
 
+
+    
+    /** 
+     * @param cc CC of the Person
+     * @param curDepName Name of the Departament currently in
+     * @return TerminalInfo Structure with person and eligible Election to vote in
+     */
     public TerminalInfo getPersonInfo(int cc, String curDepName) {
         ArrayList<Election> result = new ArrayList<Election>();
         Person p = getPersonByCC(cc);
@@ -283,6 +371,11 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return tInfo;
     }
 
+    
+    /** 
+     * @param tInfo Temrinal information (passed by the multicast server)
+     * @throws RemoteException if connection is not available
+     */
     public void processVote(TerminalInfo tInfo) throws RemoteException {
         System.out.println("started Processing");
         Election temp = null;
@@ -296,19 +389,18 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                         e.addNull();
                     } else if (tInfo.getV().getListName() == "blank") {
                         e.addBlank();
-                    }
-                    else {
+                    } else {
                         for (VotingList v : e.getLists()) {
-                            System.out.println(v.getName()); 
+                            System.out.println(v.getName());
                             System.out.println(tInfo.getV().getListName());
-                            if(v.getName().equals(tInfo.getV().getListName())){
+                            if (v.getName().equals(tInfo.getV().getListName())) {
                                 v.addCounter();
                                 System.out.println(v);
                                 break;
                             }
                         }
                     }
-                break;
+                    break;
                 }
             }
             for (Person p : this.pList) {
@@ -321,88 +413,133 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             saveObjectFile(db2, eList);
             saveObjectFile(db, pList);
         }
-        //obter a eleicao onde o voto ocorreu
+        // obter a eleicao onde o voto ocorreu
         Election election = this.getElectionById(tInfo.getV().getElectionUid());
         String response = String.format("%d - %s\n", election.getUid(), election.getTitle());
-        for (VotingListInfo vt : election.getVotingTables()){
+        for (VotingListInfo vt : election.getVotingTables()) {
             response = response + String.format("%s: %d\n", vt.getName(), vt.getVoteCount());
         }
-        //mandar a info da eleicao a que este voto pertence para as consolas de administracao (votos por mesa)
+        // mandar a info da eleicao a que este voto pertence para as consolas de
+        // administracao (votos por mesa)
         this.infoForAdminConsoles(response);
     }
-
-    public void subscribe(AdminConsoleInterface adminConsole) throws RemoteException{
+    /**
+     * This function is used to create a connection with the admin console
+     * @param adminConsole Admin console object representing the 
+     * @throws RemoteException if connection fails
+     */
+    public void subscribe(AdminConsoleInterface adminConsole) throws RemoteException {
         this.adminConsoles.add(adminConsole);
         // for(int i = 0; i < 10; i++){
-        //     this.infoForAdminConsoles("teste.");
+        // this.infoForAdminConsoles("teste.");
         // }
     }
 
-    //usar quando um voto e recebido -> numero de votos que vieram para aquela eleicao daquela mesa
-    //verificar de onde veio o voto, depois ir somar os votos que foram feitos nessa mesa e adicionar +1 do que acabou de chegar
-    //construir a string e passa-la a este metodo para que seja print nas consolas de administracao
-    private void infoForAdminConsoles(String s) throws RemoteException{
-        for (AdminConsoleInterface ac : this.adminConsoles){
-            try{
+    // usar quando um voto e recebido -> numero de votos que vieram para aquela
+    // eleicao daquela mesa
+    // verificar de onde veio o voto, depois ir somar os votos que foram feitos
+    // nessa mesa e adicionar +1 do que acabou de chegar
+    // construir a string e passa-la a este metodo para que seja print nas consolas
+    // de administracao
+    /**
+     * 
+     * @param s
+     * @throws RemoteException
+     */
+    private void infoForAdminConsoles(String s) throws RemoteException {
+        for (AdminConsoleInterface ac : this.adminConsoles) {
+            try {
                 ac.printOnConsole(s);
-            }
-            catch(RemoteException e){
-                //ocorreu um erro a mandar a string para a console, pode estar offline
+            } catch (RemoteException e) {
+                // ocorreu um erro a mandar a string para a console, pode estar offline
             }
         }
     }
 
-    private Election getElectionById(long electionId){
-        for (Election election : this.eList){
-            if (election.getUid() == electionId){
+    /**
+     * Searches the election list for an election with a specific id
+     * 
+     * @param electionId the id of the election
+     * @return THe instance of the election with the correspoding id, returns null
+     *         otherwise
+     */
+    private Election getElectionById(long electionId) {
+        for (Election election : this.eList) {
+            if (election.getUid() == electionId) {
                 return election;
             }
         }
         return null;
     }
 
-    public String finishedElectionData(long electionId) throws RemoteException{
-        //check if the id corresponds to an election
+    /**
+     * Gathers the election data and output a response in String format
+     * 
+     * @param electionId The id of the current election
+     * @return String with election information
+     * @throws RemoteException if there is a failure sending connecting with the
+     *                         server
+     */
+    public String finishedElectionData(long electionId) throws RemoteException {
+        // check if the id corresponds to an election
         Election election = this.getElectionById(electionId);
-        if (election == null){
+        if (election == null) {
             return "";
         }
-        //check if the id corresponds to a finished election
-        if (election.getEndTime().before(Calendar.getInstance())){
-            //calculate results
+        // check if the id corresponds to a finished election
+        if (election.getEndTime().before(Calendar.getInstance())) {
+            // calculate results
             String response = "";
             long totalVoteCount = election.getTotalVoteCount();
-            if (totalVoteCount == 0) totalVoteCount = 1; //para nao dar erro de divisao por zero quando ninguem votou e a eleicao acabou
+            if (totalVoteCount == 0)
+                totalVoteCount = 1; // para nao dar erro de divisao por zero quando ninguem votou e a eleicao acabou
             long voteNullCounter = election.getVoteNullCounter();
             long voteBlankCounter = election.getVoteBlankCounter();
             long vlVoteCount;
-            for (VotingList vl : election.getLists()){
+            for (VotingList vl : election.getLists()) {
                 vlVoteCount = vl.getVoteCount();
-                response = response + String.format("%s: %d   %d%%\n", vl.getName(), vlVoteCount, vlVoteCount/totalVoteCount);
+                response = response
+                        + String.format("%s: %d   %d%%\n", vl.getName(), vlVoteCount, vlVoteCount / totalVoteCount);
             }
-            response = response + String.format("Blank: %d   %d%%\nNull: %d   %d%%", voteBlankCounter, voteBlankCounter/totalVoteCount, voteNullCounter, voteNullCounter/totalVoteCount);
+            response = response + String.format("Blank: %d   %d%%\nNull: %d   %d%%", voteBlankCounter,
+                    voteBlankCounter / totalVoteCount, voteNullCounter, voteNullCounter / totalVoteCount);
             return response;
         }
         return "";
     }
 
-
-    public String updateTables(String tableDepartment, long electionId, int mode) throws RemoteException{
-        //verificar se a eleicao existe
+    
+    /** 
+     * @param tableDepartment
+     * @param electionId
+     * @param mode
+     * @return String
+     * @throws RemoteException
+     */
+    public String updateTables(String tableDepartment, long electionId, int mode) throws RemoteException {
+        // verificar se a eleicao existe
         Election election = this.getElectionById(electionId);
-        if (election == null) return "The election Id given doesn't exist.";
-        if (election.getStartTime().before(Calendar.getInstance())) return "Election already started, can't update tables.";
+        if (election == null)
+            return "The election Id given doesn't exist.";
+        if (election.getStartTime().before(Calendar.getInstance()))
+            return "Election already started, can't update tables.";
 
-        //verificar o mode em que estamos -> 0 (adicionar mesa), 1 (remover mesa)
-        if (mode == 0){
+        // verificar o mode em que estamos -> 0 (adicionar mesa), 1 (remover mesa)
+        if (mode == 0) {
             election.addVotingTable(tableDepartment);
-        }
-        else if (mode == 1){
+        } else if (mode == 1) {
             election.remVotingTable(tableDepartment);
         }
         return "";
     }
 
+    /**
+     * Class constructor for the RMIServer
+     * 
+     * @param port   Port of the Current instance of the server
+     * @param backup Port of the backup of the server
+     * @throws RemoteException
+     */
     RMIServer(int port, int backup) throws RemoteException {
         super();
         this.port = port;
@@ -411,6 +548,13 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         loader();
     }
 
+    /**
+     * Verifies if a certain departament is eligible for the election
+     * 
+     * @param e          The current Election
+     * @param curDepName The current departament
+     * @return true if adepartament is valid, false if not
+     */
     private boolean inVotingTables(Election e, String curDepName) {
         for (VotingListInfo s : e.getVotingTables()) {
             if (s.getName().equals(curDepName)) {
@@ -420,19 +564,36 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return false;
     }
 
+    /**
+     * Return the port of the server
+     */
     public int getPort() {
         return this.port;
     }
 
+    
+    /** 
+     * @param isPrimary
+     */
     public void setIsPrimary(boolean isPrimary) {
         this.isPrimary = isPrimary;
         loader();
     }
 
+    /**
+     * 
+     */
     public String heartbeat() throws RemoteException {
         return "ACK";
     }
 
+    /**
+     * Parses the command line arguments and start the RMI server
+     * 
+     * @param args Command Line arguments that specify the of the main and backup
+     *             server
+     * @throws RemoteException When There is a failure in the connection
+     */
     public static void main(String[] args) throws RemoteException {
         int port = Integer.parseInt(args[0]);
         int backup = Integer.parseInt(args[1]);
@@ -474,8 +635,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         RMIServerInterface sv = new RMIServer(port, backup);
         // System.setSecurityManager(new SecurityManager());
         // System.setProperty("java.security.policy","./OnlineVoter/security.policy");
-        //System.setProperty("java.rmi.server.hostname", "10.211.55.4");
-        //System.setProperty("java.rmi.activation.port", String.format("%d", port));
+        // System.setProperty("java.rmi.server.hostname", "10.211.55.4");
+        // System.setProperty("java.rmi.activation.port", String.format("%d", port));
         LocateRegistry.createRegistry(sv.getPort()).rebind("SV", sv);
         System.out.println("Server ready...");
         sv.setIsPrimary(true);

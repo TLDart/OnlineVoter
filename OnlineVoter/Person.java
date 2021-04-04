@@ -3,7 +3,21 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-
+/**
+ * Defines a The notion of Person to the System. This person has the following attributes:
+ * <ol>
+ *      <li> Name </li>
+ *      <li> Password </li>
+ *      <li> Departament </li>
+ *      <li> Address </li>
+ *      <li> PhoneNumber </li>
+ *      <li> CC number </li>
+ *      <li> Type </li>
+ *      <li> CC Validity </li>
+ * </ol>
+ * @author Duarte Dias
+ * @author Gabriel Fernandes
+ */
 public class Person implements Serializable{
     private long uid;
     private String name;
@@ -16,6 +30,17 @@ public class Person implements Serializable{
     private int type;
     private ArrayList<Vote> votedElections;
 
+    /**
+     * Instanciates the Person class
+     * @param name Name of the person
+     * @param password
+     * @param dep Departament of the user
+     * @param address Address of the User
+     * @param phoneNumber Phone Number of the user
+     * @param ccNr CC of the user 
+     * @param type Type of the user
+     * @param ccValidity Validity of the CC
+     */
     Person(String name, String password, String dep, String address, int phoneNumber, int ccNr, int type, Calendar ccValidity){
        super();
        this.name = name;
@@ -104,6 +129,12 @@ public class Person implements Serializable{
         this.ccValidity = ccValidity;
     }
 
+    
+    /** 
+     * Checks if the user has voted in the election e, by comparing all the voted he has made to the current Election Uid
+     * @param e Election Object in search
+     * @return Boolean True if not voted , false if voted
+     */
     public Boolean notVoted(Election e){
         for(Vote te : this.votedElections){
             if(e.getUid() == te.getElectionUid())
@@ -111,11 +142,22 @@ public class Person implements Serializable{
         }
         return true;
     }
+    
+    /** 
+     * Adds a vote to the current Person voting list (to prevent double voting)
+     * The list to which the user has voted is censured for privacy reasons
+     * @param v vote to be added
+     */
     public void addVotedElections(Vote v){
         v.setName("CONFIDENTIAL");
         this.votedElections.add(v);
     }
 
+    
+    /** 
+     * Prints the user information in string format
+     * @return String with user information
+     */
     public String toString(){
         String type_str = "";
         SimpleDateFormat sdf = new SimpleDateFormat("yyy/MM/dd");

@@ -2,6 +2,17 @@ package OnlineVoter;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.io.Serializable;
 
+/**
+ * Defines a The notion of VotingList to the System. This person has the following attributes:
+ * <ol>
+ *      <li> Name </li>
+ *      <li> Members </li>
+ *      <li> voteCount </li>
+ *      <li> Type </li>
+ * </ol>
+ * @author Duarte Dias
+ * @author Gabriel Fernandes
+ */
 public class VotingList implements Serializable {
     private CopyOnWriteArrayList<String> listMembers;
     private String name;
