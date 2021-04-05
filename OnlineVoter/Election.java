@@ -200,14 +200,17 @@ public class Election implements Serializable {
         else if (this.type == 1) type_str = "Teacher";
         else if (this.type == 2) type_str = "Staff";
         String res = String.format("Uid: %d | Title: %s | Start time : %s | End time: %s | Department: %s | Type : %s | Total votes: %d\n---------------------------------------------\nDescription: %s\n---------------------------------------------\nLists:\n", this.uid, this.title, sdf.format(this.startTime.getTime()), sdf.format(this.endTime.getTime()), this.department, type_str, this.totalVoteCount, this.description);
-        System.out.println("Voting Tables");
-        for(VotingListInfo table : this.tables){
-            System.out.println(table.getName());
-
-        }
-        System.out.println("----------------");
+        //System.out.println("Voting Tables");
+        //System.out.println("----------------");
         for (VotingList vl : this.lists){
             res = res + "\n" + vl.toString();
+        }
+        res = res + "\n----------------";
+        res = res + "\nTables:\n";
+        for(VotingListInfo table : this.tables){
+            //System.out.println(table.getName());
+            res  = res + "\n" + table.getName();
+
         }
         return res;
     }

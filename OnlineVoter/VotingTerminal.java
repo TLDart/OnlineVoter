@@ -50,7 +50,7 @@ public class VotingTerminal{
         //System.out.println(args[4]);
         this.portForVoting = Integer.parseInt(args[4]);
         this.timeInterval = 120;
-        //this.nMessagesTimeout = Integer.parseInt(args[5]);
+        this.nMessagesTimeout = Integer.parseInt(args[5]);
         this.timeoutTime = Integer.parseInt(args[6]);
 
         //ler inputs do user
@@ -60,7 +60,7 @@ public class VotingTerminal{
         //thread reponsavel pelo handle das mensagens de discovery do terminal de voto
         //this.discoverThread = new DiscoveryThread(this.numeroTerminal, this.ipForDiscovery, this.portForDiscovery);
         this.discoverThread = discoveryThread;
-        this.nMessagesTimeout = 10;
+        //this.nMessagesTimeout = 10;
         //ligar ao socket para as mensagens de voto
         this.socket = null;
         this.group = null;
@@ -167,8 +167,8 @@ public class VotingTerminal{
                                 for (int i = 7; i < words.size(); i += 2){
                                     choices.add(words.get(i));
                                 }
-                                choices.add("blank");
-                                choices.add("null");
+                                //choices.add("blank");
+                                //choices.add("null");
                                 System.out.println("Choose one of the following:");
                                 for (int i = 0; i < choices.size(); i++){
                                     System.out.println(String.format("%d - %s", i, choices.get(i)));
@@ -195,6 +195,7 @@ public class VotingTerminal{
             int aux = 0;
             try{
                 aux = Integer.parseInt(choice);
+                if(aux > choices.size() - 1) aux = choices.size() - 1;//se for numero, mas nenhuma das opcoes, e voto nulo
             }
             catch(NumberFormatException e){
                 System.out.println("NumberFormatException: " + e.getMessage());

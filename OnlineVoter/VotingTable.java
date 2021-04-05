@@ -428,7 +428,7 @@ public class VotingTable extends Thread {
             } else {
                 int i = 0, option = -1;
                 Scanner scan = new Scanner(System.in);
-                System.out.println(String.format("Select a voting list (0 - %d)", tempInfo.getValidElections().size()));
+                System.out.println(String.format("Select an election (0 - %d)", tempInfo.getValidElections().size()));
                 do {
                     for (Election e : tempInfo.getValidElections()) {
                         System.out.println(String.format("%d - %s", i, e.getTitle()));
