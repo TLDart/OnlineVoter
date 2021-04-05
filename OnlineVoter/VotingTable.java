@@ -8,10 +8,6 @@ import java.io.*;
 import java.rmi.*;
 import java.util.concurrent.TimeUnit;
 
-import javax.print.attribute.standard.NumberOfInterveningJobs;
-
-import jdk.nashorn.internal.objects.ArrayBufferView;
-
 import java.util.concurrent.FutureTask;
 import java.net.MulticastSocket;
 import java.net.SocketException;
@@ -149,7 +145,7 @@ class RequestHandler extends Thread {
         MulticastSocket socket = null;
         DatagramPacket packet, packetResponse;
         String message, cc = "", password = "", list = "";
-        int curId;
+        int curId = -1;
         Calendar cal = Calendar.getInstance();
         final SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd-HH:mm");
         String[] tokens, temp;
