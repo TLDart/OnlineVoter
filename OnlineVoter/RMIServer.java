@@ -211,6 +211,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         e = new Election(startTime, endTime, description, title, department, new CopyOnWriteArrayList<VotingList>(),
                 type, validDeps);
         e.setUid(++lastElectionUid);
+        e.getLists().add(new VotingList("null", type, new CopyOnWriteArrayList<String>()));
+        e.getLists().add(new VotingList("blank", type, new CopyOnWriteArrayList<String>()));
         if (response.equals("")) {
             this.eList.add(e);
             saveObjectFile(db2, eList);
@@ -359,8 +361,9 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 if (p.getDep().equals(e.getDepartment()) && e.getStartTime().before(Calendar.getInstance())
                         && e.getEndTime().after(Calendar.getInstance())) { //
                     System.out.println(inVotingTables(e, curDepName));
+                    System.out.println(curDepName);
                     System.out.println(p.notVoted(e));
-                    if (inVotingTables(e, curDepName) && p.notVoted(e)) // If the current Voting table is valid and the
+                    if (inVotingTables(e, curDepName) && p.notVoted(e) && p.getType() == e.getType()) // If the current Voting table is valid and the
                                                                         // user did not vote before
                         result.add(e);
                 }
@@ -384,19 +387,13 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             for (Election e : this.eList) {
                 if (e.getUid() == tInfo.getV().getElectionUid()) {
                     temp = e;
-                    if (tInfo.getV().getListName() == "null") {
-                        e.addNull();
-                    } else if (tInfo.getV().getListName() == "blank") {
-                        e.addBlank();
-                    } else {
-                        for (VotingList v : e.getLists()) {
-                            System.out.println(v.getName());
-                            System.out.println(tInfo.getV().getListName());
-                            if (v.getName().equals(tInfo.getV().getListName())) {
-                                v.addCounter();
-                                System.out.println(v);
-                                break;
-                            }
+                    for (VotingList v : e.getLists()) {
+                        System.out.println(v.getName());
+                        System.out.println(tInfo.getV().getListName());
+                        if (v.getName().equals(tInfo.getV().getListName())) {
+                            v.addCounter();
+                            System.out.println(v);
+                            break;
                         }
                     }
                     break;
@@ -523,8 +520,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         Election election = this.getElectionById(electionId);
         if (election == null)
             return "The election Id given doesn't exist.";
-        if (election.getStartTime().before(Calendar.getInstance()))
-            return "Election already started, can't update tables.";
+        //if (election.getStartTime().before(Calendar.getInstance()))
+          //  return "Election already started, can't update tables.";
 
         // verificar o mode em que estamos -> 0 (adicionar mesa), 1 (remover mesa)
         if (mode == 0) {
@@ -532,6 +529,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         } else if (mode == 1) {
             election.remVotingTable(tableDepartment);
         }
+
         return "";
     }
 
@@ -558,7 +556,9 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      * @return true if adepartament is valid, false if not
      */
     private boolean inVotingTables(Election e, String curDepName) {
+    System.out.println(e.getVotingTables().size());
         for (VotingListInfo s : e.getVotingTables()) {
+            System.out.println(s.getName());
             if (s.getName().equals(curDepName)) {
                 return true;
             }

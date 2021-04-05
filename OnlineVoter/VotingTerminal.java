@@ -43,10 +43,14 @@ public class VotingTerminal{
       * @param discoveryThread Copy of the discovery Thread
       */
     public VotingTerminal(String [] args, DiscoveryThread discoveryThread){
+        for(String arg : args){
+            System.out.println(arg);
+        }
         this.numeroTerminal = args[0];
         //this.ipForDiscovery = args[1];
         this.ipForVoting = args[2];
         //this.portForDiscovery = Integer.parseInt(args[3]);
+        System.out.println(args[4]);
         this.portForVoting = Integer.parseInt(args[4]);
         this.timeInterval = 120;
         //this.nMessagesTimeout = Integer.parseInt(args[5]);

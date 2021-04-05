@@ -1,4 +1,7 @@
 package OnlineVoter;
+
+import java.io.Serializable;
+
 /**
  * Auxilary class used to manage data from each voting table
  * 
@@ -7,7 +10,7 @@ package OnlineVoter;
  * @author Duarte Dias
  * @author Gabriel Fernandes 
  */
-public class VotingListInfo{ //Voting Table info??
+public class VotingListInfo implements Serializable{ //Voting Table info??
     private String name;
     private long voteCount;
 
