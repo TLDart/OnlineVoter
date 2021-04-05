@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.print.attribute.standard.NumberOfInterveningJobs;
 
+import jdk.nashorn.internal.objects.ArrayBufferView;
+
 import java.util.concurrent.FutureTask;
 import java.net.MulticastSocket;
 import java.net.SocketException;
@@ -172,90 +174,97 @@ class RequestHandler extends Thread {
                 /*
                  * for (String t : temp) { System.out.println(t); }
                  */
-                if (temp[0].equals("id") && !temp[1].equals("N")) {
-                    curId = Integer.parseInt(temp[1]);
-                    temp = tokens[1].split("\\|");
+                try {
+                    if (temp[0].equals("id") && !temp[1].equals("N")) {
+                        curId = Integer.parseInt(temp[1]);
+                        temp = tokens[1].split("\\|");
 
-                    if (temp[0].equals("type") && temp[1].equals("auth")) {
-                        temp = tokens[2].split("\\|");
-                        if (temp[0].equals("cc")) {
-                            cc = temp[1];
-                        }
-                        temp = tokens[3].split("\\|");
-                        if (temp[0].equals("password")) {
-                            password = temp[1];
-                        }
-                        Person ptemp = this.tInfo.get(curId).getP();
-                        System.out.println(ptemp.getCcNr());
-                        System.out.println(ptemp.getPassword());
-                        if (ptemp.getCcNr() == Integer.parseInt(cc) && ptemp.getPassword().equals(password)) {
-                            String listElements = "";// TODO: Mb verify is list has atleast 1 element
-                            int i = 1;
-                            for (VotingList v : this.tInfo.get(curId).getValidElections()
-                                    .get(this.tInfo.get(curId).getOption()).getLists()) {
-                                listElements += String.format("listitem%d|%s", i, v.getName());
-                                if (i < this.tInfo.get(curId).getValidElections().get(this.tInfo.get(curId).getOption())
-                                        .getLists().size())
-                                    listElements += ";";
-                                i++;
+                        if (temp[0].equals("type") && temp[1].equals("auth")) {
+                            temp = tokens[2].split("\\|");
+                            if (temp[0].equals("cc")) {
+                                cc = temp[1];
                             }
-                            message = String.format("id|%d;type|list;itemcount|%d;%s", curId,
-                                    this.tInfo.get(curId).getValidElections().size(), listElements);
-                        } else
-                            message = String.format("id|%d;type|error", curId);
-                        // Password and cc saved here ready to send to RMI to confirm
-                        /*
-                         * System.out.println(cc); System.out.println(password);
-                         * System.out.println("bug");
-                         */
-                        System.out.println(message);
-
-                        buffer = message.getBytes();
-                        packet = new DatagramPacket(buffer, buffer.length, group, this.port);
-
-                        socket.send(packet);
-
-                    }
-                    if (temp[0].equals("type") && temp[1].equals("vote")) {
-                        temp = tokens[2].split("\\|");
-                        if (temp[0].equals("list")) {
-                            list = temp[1];
-                        }
-                        temp = tokens[3].split("\\|");
-                        if (temp[0].equals("time")) {
-                            System.out.println(temp[1]);
-                            try {
-                                cal.setTime(sdf.parse(temp[1]));
-                            } catch (ParseException e) {
-                                System.out.println("Something went wrong");
+                            temp = tokens[3].split("\\|");
+                            if (temp[0].equals("password")) {
+                                password = temp[1];
                             }
-                        }
-                        System.out.println(cal.getTime());
-                        System.out.println(tInfo.size());
-                        tInfo.get(curId).setV(new Vote(this.tInfo.get(curId).getValidElections()
-                                .get(this.tInfo.get(curId).getOption()).getUid(), this.name, list, cal));
+                            Person ptemp = this.tInfo.get(curId).getP();
+                            System.out.println(ptemp.getCcNr());
+                            System.out.println(ptemp.getPassword());
+                            if (ptemp.getCcNr() == Integer.parseInt(cc) && ptemp.getPassword().equals(password)) {
+                                String listElements = "";// TODO: Mb verify is list has atleast 1 element
+                                int i = 1;
+                                for (VotingList v : this.tInfo.get(curId).getValidElections()
+                                        .get(this.tInfo.get(curId).getOption()).getLists()) {
+                                    listElements += String.format("listitem%d|%s", i, v.getName());
+                                    if (i < this.tInfo.get(curId).getValidElections()
+                                            .get(this.tInfo.get(curId).getOption()).getLists().size())
+                                        listElements += ";";
+                                    i++;
+                                }
+                                message = String.format("id|%d;type|list;itemcount|%d;%s", curId,
+                                        this.tInfo.get(curId).getValidElections().size(), listElements);
+                            } else
+                                message = String.format("id|%d;type|error", curId);
 
-                        System.out.println(tInfo.get(curId).getState());
-                        if (tInfo.get(curId).getState() == false) {// Avoid Voting twice
-                            tInfo.get(curId).setState(true);
-                            while (true) {
+                            buffer = message.getBytes();
+                            packet = new DatagramPacket(buffer, buffer.length, group, this.port);
+
+                            socket.send(packet);
+
+                        }
+                        if (temp[0].equals("type") && temp[1].equals("vote")) {
+                            temp = tokens[2].split("\\|");
+                            if (temp[0].equals("list")) {
+                                list = temp[1];
+                            }
+                            temp = tokens[3].split("\\|");
+                            if (temp[0].equals("time")) {
+                                System.out.println(temp[1]);
                                 try {
-                                    this.rmiSV.processVote(tInfo.get(curId));
-                                    break;
-                                } catch (RemoteException e) {
-                                    connectRMI(this.timeoutTime);
-
+                                    cal.setTime(sdf.parse(temp[1]));
+                                } catch (ParseException e) {
+                                    System.out.println("Something went wrong");
                                 }
                             }
+                            System.out.println(cal.getTime());
+                            System.out.println(tInfo.size());
+                            tInfo.get(curId)
+                                    .setV(new Vote(
+                                            this.tInfo.get(curId).getValidElections()
+                                                    .get(this.tInfo.get(curId).getOption()).getUid(),
+                                            this.name, list, cal));
+
+                            System.out.println(tInfo.get(curId).getState());
+                            if (tInfo.get(curId).getState() == false) {// Avoid Voting twice
+                                tInfo.get(curId).setState(true);
+                                while (true) {
+                                    try {
+                                        this.rmiSV.processVote(tInfo.get(curId));
+                                        break;
+                                    } catch (RemoteException e) {
+                                        connectRMI(this.timeoutTime);
+
+                                    }
+                                }
+                            }
+
+                            message = String.format("id|%d;type|unlock;", curId);
+                            buffer = message.getBytes();
+                            packet = new DatagramPacket(buffer, buffer.length, group, this.port);
+                            socket.send(packet);
                         }
 
-                        message = String.format("id|%d;type|unlock;", curId);
-                        buffer = message.getBytes();
-                        packet = new DatagramPacket(buffer, buffer.length, group, this.port);
-                        socket.send(packet);
                     }
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    message = String.format("id|%d;type|error", curId);
 
+                    buffer = message.getBytes();
+                    packet = new DatagramPacket(buffer, buffer.length, group, this.port);
+
+                    socket.send(packet);
                 }
+
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -400,7 +409,7 @@ public class VotingTable extends Thread {
                 cc = Integer.parseInt(this.reader.readLine());
             } catch (IOException e) {
                 System.out.println("There was an error");
-            }catch(NumberFormatException e){
+            } catch (NumberFormatException e) {
                 System.out.println("Please insert a number");
             }
 
@@ -448,9 +457,9 @@ public class VotingTable extends Thread {
                         wordlist = splitStr(responseMessage);
 
                         // Parse the availabitilty message
-                        for (String s : wordlist) {
-                            System.out.println(s);
-                        }
+                        /*
+                         * for (String s : wordlist) { System.out.println(s); }
+                         */
                         if (wordlist.get(0).equals("id") && !wordlist.get(1).equals("*")
                                 && wordlist.get(2).equals("type") && wordlist.get(3).equals("availability")) {
                             curId = Integer.parseInt(wordlist.get(1));
@@ -553,16 +562,15 @@ public class VotingTable extends Thread {
         String name = args[9];
         int timeoutTime = Integer.parseInt((args[10]));
 
-
         CopyOnWriteArrayList<TerminalInfo> tInfo = new CopyOnWriteArrayList<>();
         for (int i = 0; i < nTerminals + 1; i++) {
             tInfo.add(new TerminalInfo(i));
         }
 
-        RequestHandler r = new RequestHandler(multicastIP, requestPort, svIP, svPort, backupIP, backupPort, svName, nTerminals,
-                tInfo, name, timeoutTime);
-        VotingTable v = new VotingTable(multicastIP, discoveryPort, svIP, svPort, backupIP, backupPort, svName, nTerminals, tInfo,
-                name, timeoutTime);
+        RequestHandler r = new RequestHandler(multicastIP, requestPort, svIP, svPort, backupIP, backupPort, svName,
+                nTerminals, tInfo, name, timeoutTime);
+        VotingTable v = new VotingTable(multicastIP, discoveryPort, svIP, svPort, backupIP, backupPort, svName,
+                nTerminals, tInfo, name, timeoutTime);
 
         v.start();
         r.start();
