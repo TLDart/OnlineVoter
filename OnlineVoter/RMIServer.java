@@ -254,6 +254,10 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         if (title != null)
             election.setTitle(title);
 
+        if (response.equals("")){
+            saveObjectFile(db2, eList);
+        }
+
         return response;
     }
 
@@ -522,6 +526,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         } else if (mode == 1) {
             election.remVotingTable(tableDepartment);
         }
+
+        saveObjectFile(db2, this.eList);
 
         return "";
     }

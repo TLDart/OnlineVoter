@@ -64,7 +64,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
         while (true) {
             System.out.println("Loading");
             System.out.println(String.format("//%s:%d/%s", this.svIP, this.svPort, this.svName));
-            System.out.println(String.format("//%s:%d/%s", this.backupIP, this.svPort, this.svName));
+            System.out.println(String.format("//%s:%d/%s", this.backupIP, this.backupPort, this.svName));
             try {
                 rmiSv = (RMIServerInterface) Naming
                         .lookup(String.format("//%s:%d/%s", this.svIP, this.svPort, this.svName));
@@ -143,6 +143,12 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             return false;
         }
 
+        //verificar se o nome da lista contem caracteres invalidos
+        if (password.contains(";") || password.contains("|")){
+            System.out.println("List's name is invalid, it cannot contain ';' or '|'");
+            return false;
+        }
+
         // create person object
         // System.out.println("Create person objetct");
         Person p = new Person(name, password, dep, address, phoneNumber, ccNr, type, ccValidity);
@@ -190,7 +196,13 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                     members.add(uid);
                 }
             } catch (IOException e) {
-                System.out.println("WTF");
+                System.out.println("Parsing error of the list members.");
+            }
+
+            //verificar se o nome da lista contem caracteres invalidos
+            if (name.contains(";") || name.contains("|")){
+                System.out.println("List's name is invalid, it cannot contain ';' or '|'");
+                return false;
             }
 
             response = this.rmiSv.createVotingList(electionId, name, type, members);
