@@ -43,14 +43,11 @@ public class VotingTerminal{
       * @param discoveryThread Copy of the discovery Thread
       */
     public VotingTerminal(String [] args, DiscoveryThread discoveryThread){
-        for(String arg : args){
-            System.out.println(arg);
-        }
         this.numeroTerminal = args[0];
         //this.ipForDiscovery = args[1];
         this.ipForVoting = args[2];
         //this.portForDiscovery = Integer.parseInt(args[3]);
-        System.out.println(args[4]);
+        //System.out.println(args[4]);
         this.portForVoting = Integer.parseInt(args[4]);
         this.timeInterval = 120;
         //this.nMessagesTimeout = Integer.parseInt(args[5]);
@@ -141,11 +138,9 @@ public class VotingTerminal{
             //enviar a mesa de voto para verificacao
             //se receber uma mensagem igual a anterior significa que a mesa nao recebeu -> enviar outra vez
             //se receber a mensagem com as listas, continuar
-            System.out.println("wtf");
             keep = true;
             //construir datagrama -> basta faze-lo uma vez
             response = String.format("id|%s;type|auth;cc|%s;password|%s", this.numeroTerminal, cc, password);
-            System.out.println(response);
             bytesSend = response.getBytes();
             datagramSend = new DatagramPacket(bytesSend, bytesSend.length, this.group, this.portForVoting);
             while(keep){//embrulhar tudo em try catch para voltar a enviar a mensagem
@@ -158,7 +153,7 @@ public class VotingTerminal{
                         message = new String(datagramReceive.getData(), 0, datagramReceive.getLength());
 
                         words = splitStr(message);
-                        System.out.println(message);
+                        //System.out.println(message);
                         if (words.size() > 3 &&words.get(0).equals("id") && words.get(1).equals(numeroTerminal)){
                             if (words.get(2).equals("type") && words.get(3).equals("error")){
                                 //ocorreu um erro na autenticacao
@@ -225,7 +220,7 @@ public class VotingTerminal{
                         message = new String(datagramReceive.getData(), 0, datagramReceive.getLength());
 
                         words = splitStr(message);
-                        System.out.println(words);
+                        //System.out.println(words);
                         if (words.size() > 3 && words.get(0).equals("id") && words.get(1).equals(numeroTerminal)){
                             if (words.get(2).equals("type") && words.get(3).equals("unlock")){
                                 keep = false;
@@ -311,20 +306,20 @@ class DiscoveryThread implements Runnable{
                 //for (int i = 0; i < this.nMessagesTimeout; i++){//no maximo le nMessagesTimeout sem receber a resposta que quer antes de reenviar mensagem
                     //ler as mensagens do grupo
                     datagramReceive = new DatagramPacket(buffer, buffer.length);
-                    System.out.println(this.portForDiscovery);
-                    System.out.println(this.ipForDiscovery);
+                    //System.out.println(this.portForDiscovery);
+                    //System.out.println(this.ipForDiscovery);
                     socket.receive(datagramReceive);
                     message = new String(datagramReceive.getData(), 0, datagramReceive.getLength());
-                    System.out.println(message);
+                    //System.out.println(message);
                     
                     words = splitStr(message);
-                    System.out.println(words);
+                   // System.out.println(words);
                     if (words.size() > 3 && words.get(0).equals("id") && words.get(1).equals("*") && words.get(2).equals("type") && words.get(3).equals("availability") && this.free){
                         response = String.format("id|%s;type|availability", this.numeroTerminal);
                         bytesSend = response.getBytes();
                         datagramSend = new DatagramPacket(bytesSend, bytesSend.length,group, this.portForDiscovery);
                         socket.send(datagramSend);
-                        System.out.println("sent");
+                        //System.out.println("sent");
                     }
 
                     else if(words.size() > 3 && words.get(1).equals(numeroTerminal) && words.get(2).equals("type") && words.get(3).equals("lock")){//dar lock
