@@ -1,3 +1,0 @@
-## Online Voting System
-
-### Contributor

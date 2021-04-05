@@ -84,8 +84,14 @@ public class Starter {
                 Process p = Runtime.getRuntime().exec(String.format(
                         "/usr/bin/x-terminal-emulator --disable-factory -e java OnlineVoter.RMIServer %s %s %s %s %s",
                         ServerIP, ServerPort, BackupIP, BackupPort, ServerName));
+                System.out.println(String.format(
+                        "/usr/bin/x-terminal-emulator --disable-factory -e java OnlineVoter.RMIServer %s %s %s %s %s",
+                        ServerIP, ServerPort, BackupIP, BackupPort, ServerName));;
                 TimeUnit.SECONDS.sleep(5);
                 p = Runtime.getRuntime().exec(String.format(
+                        "/usr/bin/x-terminal-emulator --disable-factory -e java OnlineVoter.RMIServer %s %s %s %s %s",
+                        BackupIP, BackupPort, ServerIP, ServerPort, ServerName));
+                System.out.println(String.format(
                         "/usr/bin/x-terminal-emulator --disable-factory -e java OnlineVoter.RMIServer %s %s %s %s %s",
                         BackupIP, BackupPort, ServerIP, ServerPort, ServerName));
                 TimeUnit.SECONDS.sleep(5);
