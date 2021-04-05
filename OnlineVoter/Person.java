@@ -3,6 +3,7 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * Defines the notion of Person to the System. This person has the following attributes:
  * <ol>
@@ -153,6 +154,9 @@ public class Person implements Serializable{
         this.votedElections.add(v);
     }
 
+    public ArrayList<Vote> getVotedElections(){
+        return this.votedElections;
+    }
     
     /** 
      * Prints the user information in string format

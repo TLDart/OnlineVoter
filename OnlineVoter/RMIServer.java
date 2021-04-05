@@ -382,6 +382,15 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
             for (Election e : this.eList) {
                 if (e.getUid() == tInfo.getV().getElectionUid()) {
                     temp = e;
+                    for (Person p : this.pList) {
+                        if (p.getCcNr() == tInfo.getP().getCcNr()) {
+                            for(Vote vt : p.getVotedElections()){
+                                if(tInfo.getV().getElectionUid() == vt.getElectionUid()){
+                                    return;
+                                }
+                            }
+                        }
+                    }
                     for (VotingList v : e.getLists()) {
                         //System.out.println(v.getName());
                         //System.out.println(tInfo.getV().getListName());
