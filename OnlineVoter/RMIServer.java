@@ -8,6 +8,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.*;
 import java.io.*;
+import java.net.MalformedURLException;
 import java.rmi.*;
 import java.util.concurrent.*;
 
@@ -618,8 +619,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 return;
             }
         }
-        counter = (counter == 10) ? 0 : 5;
-        while (counter < 5) {
+        counter = (counter == 10) ? 0 : 10;
+        while (counter < 10) {
             try {
                 if (svBack != null)
                     svBack.heartbeat();
@@ -629,6 +630,10 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                                          // assume primary
                 System.out.println("Remote server failed");
                 counter++;
+                try{
+                    svBack = (RMIServerInterface) Naming.lookup(String.format("//%s:%d/%s", backupIP, backupPort, svName));
+                }
+                catch(RemoteException | NotBoundException | MalformedURLException i){}
             }
             try {
                 TimeUnit.SECONDS.sleep(1); // TODO check this try catch
