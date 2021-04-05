@@ -161,10 +161,10 @@ class RequestHandler extends Thread {
                 packetResponse = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packetResponse);
 
-                System.out.println("Received packet from " + packetResponse.getAddress().getHostAddress() + ":"
-                        + packetResponse.getPort() + " with message:");
+                // System.out.println("Received packet from " + packetResponse.getAddress().getHostAddress() + ":"
+                //         + packetResponse.getPort() + " with message:");
                 message = new String(packetResponse.getData(), 0, packetResponse.getLength());
-                System.out.println(message);
+                //System.out.println(message);
                 tokens = message.replaceAll("\\(", "").replaceAll("\\)", "").replaceAll("\\s+", "").split(";");
                 temp = tokens[0].split("\\|");
                 /*
@@ -426,12 +426,13 @@ public class VotingTable extends Thread {
                 Scanner scan = new Scanner(System.in);
                 System.out.println(String.format("Select an election (0 - %d)", tempInfo.getValidElections().size()));
                 do {
+                    i = 0;
                     for (Election e : tempInfo.getValidElections()) {
                         System.out.println(String.format("%d - %s", i, e.getTitle()));
                         i++;
                     }
                     option = scan.nextInt();
-                } while (option < 0 || option > tempInfo.getValidElections().size());
+                } while (option < 0 || option > tempInfo.getValidElections().size() - 1);
                 tempInfo.setOption(option);
 
                 try {
@@ -479,7 +480,7 @@ public class VotingTable extends Thread {
                             }
                             break;
                         }
-                        System.out.println("found it");
+                        //System.out.println("found it");
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

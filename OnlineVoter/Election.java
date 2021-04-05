@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.xml.crypto.dsig.keyinfo.RetrievalMethod;
+
 /**
  * The Election class contains all the data related to a certain Election. This
  * is:
@@ -156,6 +158,10 @@ public class Election implements Serializable {
 
     public long getVoteNullCounter() {
         return this.voteCountNull;
+    }
+
+    public synchronized void addVote(){
+        this.totalVoteCount++;
     }
 
     /**

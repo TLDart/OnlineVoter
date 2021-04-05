@@ -150,6 +150,9 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         Election election = this.searchElectionById(electionId);
         if (election == null)
             response = response + "Election Id doesnt exist.\n"; // TODO check here if something should be returned
+        else if(election.getStartTime().before(Calendar.getInstance())){
+            response = response + "The election already started, can't change settings.";
+        }
         else {
             // verify if there's already a list with the same name for this election
             if (this.searchVotingList(election, name) != null)
@@ -396,6 +399,11 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                         //System.out.println(tInfo.getV().getListName());
                         if (v.getName().equals(tInfo.getV().getListName())) {
                             v.addCounter();
+                            for (VotingListInfo vi : e.getVotingTables()){
+                                if(vi.getName().equals(tInfo.getV().getVotingTable())){
+                                    vi.addVoteCount();
+                                }
+                            }
                             //System.out.println(v);
                             break;
                         }
@@ -408,6 +416,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                     p.addVotedElections(tInfo.getV());
                 }
             }
+            temp.addVote();
             //System.out.println("REached end");
             tInfo.setState(true);
             saveObjectFile(db2, eList);
@@ -527,8 +536,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         Election election = this.getElectionById(electionId);
         if (election == null)
             return "The election Id given doesn't exist.";
-        // if (election.getStartTime().before(Calendar.getInstance()))
-        // return "Election already started, can't update tables.";
+        if (election.getStartTime().before(Calendar.getInstance()))
+            return "Election already started, can't update tables.";
 
         // verificar o mode em que estamos -> 0 (adicionar mesa), 1 (remover mesa)
         if (mode == 0) {

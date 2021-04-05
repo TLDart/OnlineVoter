@@ -23,15 +23,15 @@ public class VotingListInfo implements Serializable{ //Voting Table info??
         this.voteCount = 0;
     }
 
-    void addVoteCount(){
+    public synchronized void addVoteCount(){
         this.voteCount++;
     }
 
-    long getVoteCount(){
+    public long getVoteCount(){
         return this.voteCount;
     }
 
-    String getName(){
+    public String getName(){
         return this.name;
     }
 }

@@ -117,6 +117,7 @@ public class VotingTerminal{
             while(keep){//espera que o terminal esteja a ser usado
                if (this.discoverThread.getFree() == false) keep = false;
             }
+
             //obter numero de cc
             System.out.println("Insert you cc number:");
             FutureTask<String> task = new FutureTask<String>(() -> {
@@ -187,10 +188,9 @@ public class VotingTerminal{
                 return reader.readLine();
             });
             thread = new Thread(task);
-            thread.setDaemon(true);
             thread.start();
             String choice = task.get(timeInterval, TimeUnit.SECONDS);
-
+            
             //verificar que a escolha e valida
             int aux = 0;
             try{
