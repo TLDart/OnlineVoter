@@ -449,7 +449,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
             long electionId = Long.parseLong(aux);
             String response = this.rmiSv.finishedElectionData(electionId);
             if (response.equals("")) {
-                System.out.println("Invalid election's uid.");
+                System.out.println("Invalid election's uid or the election hasn't ended yet.");
             } else {
                 System.out.println(response);
             }

@@ -19,6 +19,7 @@ public class Starter {
     private static String[] TableNames;
     private static String[] ConfTemp;
     private static ArrayList<Integer> Configuration = new ArrayList<>();
+    private static String nMessagesTimeout;
 
     public static String getOsName() {
         if (OS == null) {
@@ -60,6 +61,7 @@ public class Starter {
             temp = prop.getProperty("TableNames");
             TableNames = temp.split(",");
             temp = prop.getProperty("Configuration");
+            nMessagesTimeout = prop.getProperty("nMessagesTimeout");
             ConfTemp = temp.split(",");
             try {
                 for (String el : ConfTemp) {
@@ -111,14 +113,14 @@ public class Starter {
                 for (int j = 0; j < Configuration.size(); j++) {
                     for (i = 0; i < Configuration.get(j); i++) {
                         p = Runtime.getRuntime().exec(String.format(
-                                "/usr/bin/x-terminal-emulator --disable-factory -e java OnlineVoter.VotingTerminal %d %s %s %s %s %s %s %s %s %s",
+                                "/usr/bin/x-terminal-emulator --disable-factory -e java OnlineVoter.VotingTerminal %d %s %s %s %s %s %s",
                                 i, MulticastDiscoveryIP[j], MulticastDiscoveryIP[j], MulticastDiscoveryPort[j],
-                                MulticastrequestHandlerPort[j], BackupIP, BackupPort, ServerName, MulticastTerminalNumber,
+                                MulticastrequestHandlerPort[j], nMessagesTimeout,
                                 TimeoutTime));
                         System.out.println(String.format(
-                                "/usr/bin/x-terminal-emulator --disable-factory -e java OnlineVoter.VotingTerminal %d %s %s %s %s %s %s %s %s %s",
+                                "/usr/bin/x-terminal-emulator --disable-factory -e java OnlineVoter.VotingTerminal %d %s %s %s %s %s %s",
                                 i, MulticastDiscoveryIP[j], MulticastDiscoveryIP[j], MulticastDiscoveryPort[j],
-                                MulticastrequestHandlerPort[j], BackupIP, BackupPort, ServerName, MulticastTerminalNumber,
+                                MulticastrequestHandlerPort[j], nMessagesTimeout,
                                 TimeoutTime));
                         TimeUnit.SECONDS.sleep(2);
                     }
