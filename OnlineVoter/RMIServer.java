@@ -29,6 +29,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     String db2 = "data/db2.csv";
     private boolean isPrimary = false;
     private ArrayList<AdminConsoleInterface> adminConsoles;
+    private CopyOnWriteArrayList<PrintInfoAnnotationInterface> wbsockets;
 
     /**
      * @param uid
@@ -463,6 +464,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         // mandar a info da eleicao a que este voto pertence para as consolas de
         // administracao (votos por mesa)
         this.infoForAdminConsoles(response);
+        //mandar para os browsers conectados
+        this.infoForBrowsers(response);
     }
 
     /**
@@ -497,6 +500,16 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                 ac.printOnConsole(s);
             } catch (RemoteException e) {
                 // ocorreu um erro a mandar a string para a console, pode estar offline
+            }
+        }
+    }
+
+    private void infoForBrowsers(String s) throws RemoteException{
+        for(PrintInfoAnnotationInterface p : this.wbsockets){
+            try{
+                p.sendRealTimeData(s);
+            }catch(RemoteException e){
+                //erro
             }
         }
     }
@@ -595,6 +608,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         this.port = port;
         this.backUp = backup;
         this.adminConsoles = new ArrayList<AdminConsoleInterface>();
+        this.wbsockets = new CopyOnWriteArrayList<PrintInfoAnnotationInterface>();
         loader();
     }
 
@@ -636,6 +650,24 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      */
     public String heartbeat() throws RemoteException {
         return "ACK";
+    }
+
+
+    public void wbsSubscribe(PrintInfoAnnotationInterface wbs) throws RemoteException {
+        this.wbsockets.add(wbs);
+    }
+
+    public void wbsDeSubscribe(PrintInfoAnnotationInterface wbs) throws RemoteException {
+        this.wbsockets.remove(wbs);
+    }
+
+    public String electionData(long electionId) throws RemoteException{
+        // check if the id corresponds to an election
+        Election election = this.getElectionById(electionId);
+        if (election == null) {
+            return "";
+        }
+        return election.toString();
     }
 
     /**
