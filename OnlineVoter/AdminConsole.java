@@ -334,6 +334,7 @@ public class AdminConsole extends UnicastRemoteObject implements AdminConsoleInt
                 }
             }
             CopyOnWriteArrayList<VotingListInfo> validDeps = new CopyOnWriteArrayList<>();
+            validDeps.add(new VotingListInfo("WEB"));
 
             if (option == 0)
                 response = this.rmiSv.createElection(startTime, endTime, description, title, department, type,

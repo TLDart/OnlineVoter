@@ -18,7 +18,7 @@ public class VotingListInfo implements Serializable{ //Voting Table info??
       * 
       * @param name Nameof the voting table
       */
-    VotingListInfo(String name){
+    public VotingListInfo(String name){
         this.name = name;
         this.voteCount = 0;
     }

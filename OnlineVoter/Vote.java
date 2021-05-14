@@ -27,7 +27,7 @@ public class Vote implements Serializable{
       * @param listName Name of the list this vote as voted in
       * @param voteTime Time the vote was casted
       */
-    Vote(long electionUid, String votingTable, String listName, Calendar voteTime){
+    public Vote(long electionUid, String votingTable, String listName, Calendar voteTime){
         this.votingTable = votingTable; 
         this.listName = listName;
         this.voteTime = voteTime;

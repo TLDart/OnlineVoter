@@ -20,4 +20,5 @@ public interface RMIServerInterface extends Remote {
     public void subscribe(AdminConsoleInterface adminConsole) throws RemoteException;
     public String finishedElectionData(long electionId) throws RemoteException;
     public String updateTables(String tableDepartment, long electionId, int mode) throws RemoteException;
+    public TerminalInfo getPersonInfoWeb(int cc, String curDepName) throws RemoteException;
 }

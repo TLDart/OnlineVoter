@@ -42,7 +42,7 @@ public class Person implements Serializable{
      * @param type Type of the user
      * @param ccValidity Validity of the CC
      */
-    Person(String name, String password, String dep, String address, int phoneNumber, int ccNr, int type, Calendar ccValidity){
+    public Person(String name, String password, String dep, String address, int phoneNumber, int ccNr, int type, Calendar ccValidity){
        super();
        this.name = name;
        this.password = password;

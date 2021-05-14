@@ -371,6 +371,38 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         TerminalInfo tInfo = new TerminalInfo(-1, result, p);
         return tInfo;
     }
+    /**
+     * @param cc         CC of the Person
+     * @param curDepName Name of the Departament currently in
+     * @return TerminalInfo Structure with person and eligible Election to vote in
+     */
+    public TerminalInfo getPersonInfoWeb(int cc, String curDepName) {
+        ArrayList<Election> result = new ArrayList<Election>();
+        Person p = getPersonByCC(cc);
+        if (p == null)
+            return new TerminalInfo(-1, result, p);
+        else {
+            for (Election e : eList) {
+                // System.out.println(e.getTitle());
+                // System.out.println(String.format("%b %b %b",
+                // p.getDep().equals(e.getDepartment()),
+                // e.getStartTime().before(Calendar.getInstance()),
+                // e.getEndTime().after(Calendar.getInstance())));
+                // System.out .println(String.format("%s %s", e.getStartTime().getTime(),
+                // Calendar.getInstance().getTime()));
+                if (p.getDep().equals(e.getDepartment()) && e.getStartTime().before(Calendar.getInstance())
+                        && e.getEndTime().after(Calendar.getInstance())) { //
+                    // System.out.println(inVotingTables(e, curDepName));
+                    // System.out.println(curDepName);
+                    // System.out.println(p.notVoted(e));
+                    if (p.notVoted(e) && p.getType() == e.getType())
+                        result.add(e);
+                }
+            }
+        }
+        TerminalInfo tInfo = new TerminalInfo(-1, result, p);
+        return tInfo;
+    }
 
     /**
      * @param tInfo Temrinal information (passed by the multicast server)
