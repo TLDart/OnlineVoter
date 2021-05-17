@@ -30,6 +30,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
     private boolean isPrimary = false;
     private ArrayList<AdminConsoleInterface> adminConsoles;
     private CopyOnWriteArrayList<PrintInfoAnnotationInterface> wbsockets;
+    private CopyOnWriteArrayList<Integer> currentOnlineUsers;
 
     /**
      * @param uid
@@ -377,7 +378,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
      * @param curDepName Name of the Departament currently in
      * @return TerminalInfo Structure with person and eligible Election to vote in
      */
-    public TerminalInfo getPersonInfoWeb(int cc, String curDepName) {
+    public TerminalInfo getPersonInfoWeb(int cc, String curDepName) throws RemoteException{
         ArrayList<Election> result = new ArrayList<Election>();
         Person p = getPersonByCC(cc);
         if (p == null)
@@ -398,6 +399,13 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
                     // System.out.println(p.notVoted(e));
                     if (p.notVoted(e) && p.getType() == e.getType())
                         result.add(e);
+                }
+            }
+            if (result.size() != 0){
+                if(!this.currentOnlineUsers.contains(cc)){
+                    //enviar mensagem a dizer que nova pessoa se conectou
+                    this.infoForBrowsers(String.format("CONNECTED: %s", this.getPersonByCC(cc).toString()), 0);
+                    this.currentOnlineUsers.add(cc);
                 }
             }
         }
@@ -464,8 +472,12 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         // mandar a info da eleicao a que este voto pertence para as consolas de
         // administracao (votos por mesa)
         this.infoForAdminConsoles(response);
-        //mandar para os browsers conectados
-        this.infoForBrowsers(response);
+        //mandar info dos votos para os browsers conectados
+        this.infoForBrowsers(response, 1);
+
+        //enviar mensagem a dizer que o user deste voto se desconectou
+        this.infoForBrowsers(String.format("DISCONECTED: %s", this.getPersonByCC(tInfo.getP().getCcNr()).toString()), 0);
+        this.currentOnlineUsers.remove(tInfo.getP().getCcNr());
     }
 
     /**
@@ -504,10 +516,10 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         }
     }
 
-    private void infoForBrowsers(String s) throws RemoteException{
+    private void infoForBrowsers(String s, int type) throws RemoteException{
         for(PrintInfoAnnotationInterface p : this.wbsockets){
             try{
-                p.sendRealTimeData(s);
+                p.sendRealTimeData(s, type);
             }catch(RemoteException e){
                 //erro
             }
@@ -609,6 +621,7 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         this.backUp = backup;
         this.adminConsoles = new ArrayList<AdminConsoleInterface>();
         this.wbsockets = new CopyOnWriteArrayList<PrintInfoAnnotationInterface>();
+        this.currentOnlineUsers = new CopyOnWriteArrayList<Integer> ();
         loader();
     }
 
@@ -655,6 +668,12 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
     public void wbsSubscribe(PrintInfoAnnotationInterface wbs) throws RemoteException {
         this.wbsockets.add(wbs);
+        //enviar info sobre todos os users atualmente conectados
+        String message = "";
+        for (Integer i : this.currentOnlineUsers){
+            message += String.format("CONNECTED: %s\n", this.getPersonByCC(i).toString());
+        }
+        wbs.sendRealTimeData(message, 0);
     }
 
     public void wbsDeSubscribe(PrintInfoAnnotationInterface wbs) throws RemoteException {
