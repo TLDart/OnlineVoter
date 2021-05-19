@@ -689,6 +689,26 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
         return election.toString();
     }
 
+    public void saveFacebookId(int cc, String facebookId){
+        Person p = getPersonByCC(cc);
+        if (p == null) return;
+        p.setFacebookId(facebookId);
+        saveObjectFile(db, pList);
+    }
+
+    public TerminalInfo verifyFacebookLogin(String facebookId){
+        for (Person p : this.pList){
+            if (p.getFacebookId().equals(facebookId)){
+                try{
+                    return this.getPersonInfoWeb(p.getCcNr(), p.getDep());
+                }catch(RemoteException e){
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Parses the command line arguments and start the RMI server
      * 

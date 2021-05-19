@@ -24,4 +24,6 @@ public interface RMIServerInterface extends Remote {
     public void wbsSubscribe(PrintInfoAnnotationInterface wbs) throws RemoteException;
     public void wbsDeSubscribe(PrintInfoAnnotationInterface wbs) throws RemoteException;
     public String electionData(long electionId) throws RemoteException;
+    public void saveFacebookId(int cc, String facebookId) throws RemoteException;
+    public TerminalInfo verifyFacebookLogin(String facebookId) throws RemoteException;
 }

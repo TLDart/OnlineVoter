@@ -30,6 +30,7 @@ public class Person implements Serializable{
     private Calendar ccValidity;
     private int type;
     private ArrayList<Vote> votedElections;
+    private String facebookId;
 
     /**
      * Instanciates the Person class
@@ -158,6 +159,13 @@ public class Person implements Serializable{
         return this.votedElections;
     }
     
+    public void setFacebookId(String facebookId){
+        this.facebookId = facebookId;
+    }
+
+    public String getFacebookId(){
+        return this.facebookId;
+    }
     /** 
      * Prints the user information in string format
      * @return String with user information
@@ -168,6 +176,6 @@ public class Person implements Serializable{
         if (this.type == 0) type_str = "Student";
         else if (this.type == 1) type_str = "Teacher";
         else if (this.type == 2) type_str = "Staff";
-        return String.format("Uid: %d | Name: %s | Department: %s | Address: %s | Phone number: %d | Type: %s | ccNr: %d | ccValidity: %s | password: %s", this.uid, this.name, this.dep, this.address, this.phoneNumber, type_str, this.ccNr, sdf.format(this.ccValidity.getTime()), this.password);
+        return String.format("Uid: %d | Name: %s | Department: %s | Address: %s | Phone number: %d | Type: %s | ccNr: %d | ccValidity: %s | password: %s | facebookId: %s", this.uid, this.name, this.dep, this.address, this.phoneNumber, type_str, this.ccNr, sdf.format(this.ccValidity.getTime()), this.password, this.facebookId);
     }
 }
