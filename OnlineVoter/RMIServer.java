@@ -477,7 +477,8 @@ public class RMIServer extends UnicastRemoteObject implements RMIServerInterface
 
         //enviar mensagem a dizer que o user deste voto se desconectou
         this.infoForBrowsers(String.format("DISCONECTED: %s", this.getPersonByCC(tInfo.getP().getCcNr()).toString()), 0);
-        this.currentOnlineUsers.remove(tInfo.getP().getCcNr());
+        System.out.println(this.currentOnlineUsers);
+        this.currentOnlineUsers.remove( Integer.valueOf(tInfo.getP().getCcNr()));
     }
 
     /**
