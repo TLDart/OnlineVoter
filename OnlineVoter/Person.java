@@ -54,6 +54,7 @@ public class Person implements Serializable{
        this.ccValidity = ccValidity;
        this.type = type;
        this.votedElections = new ArrayList<>();
+       this.facebookId = "";
    }
    Person(String s){
         super();
