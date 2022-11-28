@@ -1,6 +1,7 @@
 # Online Voting System
-Autores:    Duarte Dias 2018293526 duartedias@student.uc.pt
-            Gabriel Fernandes 2018288117 gabrielf@student.dei.uc.pt
+##Autores  
+* Duarte Dias 2018293526 duartedias@student.uc.pt
+* Gabriel Fernandes 2018288117 gabrielf@student.dei.uc.pt
 
 # Notes
 This only contains the backend to the program.
