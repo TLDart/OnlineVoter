@@ -2,7 +2,10 @@
 Autores:    Duarte Dias 2018293526 duartedias@student.uc.pt
             Gabriel Fernandes 2018288117 gabrielf@student.dei.uc.pt
 
-Como correr o Programa:
+# Notes
+This only contains the backend to the program.
+
+# Como correr o Programa
 Inserir os 4 jar ficheiros numa pasta(console, rmiserver, server e terminal);
 Criar um pasta chamada db na mesma pasta onde estão os outros 4 ficheiros.
 
@@ -65,3 +68,7 @@ java -jar server.jar 224.3.2.1 4321 43210 localhost 3200 localhost 4200 SV 3 DEI
 java -jar terminal.jar 0 224.3.2.1 224.3.2.1 4321 43210 10 10
 java -jar terminal.jar 1 224.3.2.1 224.3.2.1 4321 43210 10 10
 java -jar terminal.jar 2 224.3.2.1 224.3.2.1 4321 43210 10 10
+
+
+## Contributors
+* [Gabriel Fernandes](https://github.com/gabrielmendesfernandes)
